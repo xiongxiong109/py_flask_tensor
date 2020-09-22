@@ -29,11 +29,12 @@ def close_db(e=None):
 # 初始化数据库表
 def init_db():
     db = get_db()
-    with current_app.open_source('schema.sql') as f:
+    with current_app.open_resource('schema.sql') as f:
         db.executescript(f.read().decode('utf8'))
 
 
 # 定义一个指令，用于初始化数据库表
+# 命令也需要在venv环境下才能执行
 @click.command('init-db')
 @with_appcontext
 def init_db_command():
