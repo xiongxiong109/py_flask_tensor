@@ -1,9 +1,10 @@
 # 使用蓝图实现认证模块
 # 引入多个模块需要换行时，可以使用Tuble
+import functools
 from flask import (
-    Blueprint, flash,
-    render_template,
-    request, session
+    Blueprint, flash, url_for,
+    render_template, redirect,
+    request, session, g
 )
 from werkzeug.security import (
     generate_password_hash,
@@ -12,6 +13,21 @@ from werkzeug.security import (
 from flaskr.db import get_db
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
+
+
+# 注册一个在视图函数之前运行的中间件
+@bp.before_app_request
+# 载入已登录的用户信息
+def load_logged_user():
+    user_id = session.get('user_id')
+    if user_id is None:
+        g.user = None
+    else:
+        db = get_db()
+        g.user = db.execute(
+            'SELECT * FROM user WHERE id = ?',
+            (user_id, )
+        ).fetchone()
 
 
 # 添加auth相关路由
@@ -72,12 +88,31 @@ def login():
                 error = 'password error'
         if error is None:
             session.clear()
-            session['user_nm'] = user['username']
-        error is not None and flash(error)
-
+            session['user_id'] = user['id']
+        # error is not None and flash(error)
+        if error is not None:
+            return render_template(
+                'auth/login.html',
+                error=error
+            )
     # get, 渲染登录页面
     # print(session.get('user_nm'))
-    return render_template(
-        'auth/login.html',
-        user_nm=session.get('user_nm')
-    )
+    return render_template('auth/login.html')
+
+
+# 登出
+@bp.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('auth.login'))
+
+
+# 登录跳转装饰器(鉴权中间件)
+def login_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            return redirect(url_for('auth.login'))
+        return view(**kwargs)
+    return wrapped_view()
+

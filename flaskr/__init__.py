@@ -26,9 +26,9 @@ def create_app(test_config=None):
         pass
 
     # a simple page that says hello
-    @app.route('/hello')
+    @app.route('/index')
     def hello():
-        return 'Hello, World!'
+        return 'Index Page'
 
     # 初始化数据库
     from . import db
