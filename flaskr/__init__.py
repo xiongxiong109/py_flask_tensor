@@ -25,11 +25,6 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    # a simple page that says hello
-    @app.route('/index')
-    def hello():
-        return 'Index Page'
-
     # 初始化数据库
     from . import db
     db.init_app(app)
@@ -42,5 +37,7 @@ def create_app(test_config=None):
     # 博客蓝图
     from . import blog
     app.register_blueprint(blog.bp)
+
+    app.add_url_rule('/', endpoint='index')
 
     return app

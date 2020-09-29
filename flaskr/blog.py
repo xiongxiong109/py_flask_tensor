@@ -3,10 +3,11 @@ from flask import (
     Blueprint, render_template
 )
 
-bp = Blueprint('blog', __name__, url_prefix='/blog')
+# 博客蓝图没有url_prefix，所以指向/
+bp = Blueprint('blog', __name__)
 
 
 # 博客首页
-@bp.route('/index', methods=['GET'])
+@bp.route('/', methods=['GET'])
 def index():
     return render_template('blog/index.html')
