@@ -35,7 +35,12 @@ def create_app(test_config=None):
     db.init_app(app)
 
     # 导入并注册蓝图
+    # 鉴权蓝图
     from . import auth
     app.register_blueprint(auth.bp)
+
+    # 博客蓝图
+    from . import blog
+    app.register_blueprint(blog.bp)
 
     return app

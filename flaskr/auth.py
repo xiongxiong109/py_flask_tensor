@@ -89,6 +89,7 @@ def login():
         if error is None:
             session.clear()
             session['user_id'] = user['id']
+            return redirect(url_for('blog.index'))
         # error is not None and flash(error)
         if error is not None:
             return render_template(
