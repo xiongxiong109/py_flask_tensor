@@ -11,5 +11,6 @@ instance/
 htmlcov/
 
 dist/
-build/
+./build/
 *.egg-info/
+node_modules
