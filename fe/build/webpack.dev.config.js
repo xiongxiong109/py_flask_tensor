@@ -1,7 +1,6 @@
 const baseConfig = require('./webpack.base.config')
 const { merge } = require('webpack-merge')
 const path = require('path')
-const webpack = require('webpack')
 
 const devConfig = merge(baseConfig, {
     output: {
@@ -9,12 +8,7 @@ const devConfig = merge(baseConfig, {
         publicPath: '/static/',
         path: path.resolve(__dirname, '..', '..', 'flaskr', 'static')
     },
-    mode: 'development',
-    plugins: [
-        new webpack.HotModuleReplacementPlugin({
-            // Options...
-        })
-    ]
+    mode: 'development'
 })
 
 module.exports = devConfig

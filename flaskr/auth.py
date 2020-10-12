@@ -71,7 +71,8 @@ def login():
     # 处理post请求
     if request.method == 'POST':
         db = get_db()
-        form = request.form
+        # 切换成ajax
+        form = request.json
         unm = form['user_nm']
         pwd = form['user_pwd']
         error = None
@@ -92,10 +93,13 @@ def login():
             return redirect(url_for('blog.index'))
         # error is not None and flash(error)
         if error is not None:
-            return render_template(
-                'auth/login.html',
-                error=error
-            )
+            return {
+                "error": error
+            }
+        else:
+            return {
+                "error": ""
+            }
     # get, 渲染登录页面
     # print(session.get('user_nm'))
     return render_template('auth/login.html')

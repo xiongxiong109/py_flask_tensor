@@ -1,710 +1,50 @@
 /******/ (function(modules) { // webpackBootstrap
-/******/ 	function hotDisposeChunk(chunkId) {
-/******/ 		delete installedChunks[chunkId];
-/******/ 	}
-/******/ 	var parentHotUpdateCallback = window["webpackHotUpdate"];
-/******/ 	window["webpackHotUpdate"] = // eslint-disable-next-line no-unused-vars
-/******/ 	function webpackHotUpdateCallback(chunkId, moreModules) {
-/******/ 		hotAddUpdateChunk(chunkId, moreModules);
-/******/ 		if (parentHotUpdateCallback) parentHotUpdateCallback(chunkId, moreModules);
-/******/ 	} ;
+/******/ 	// install a JSONP callback for chunk loading
+/******/ 	function webpackJsonpCallback(data) {
+/******/ 		var chunkIds = data[0];
+/******/ 		var moreModules = data[1];
 /******/
-/******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	function hotDownloadUpdateChunk(chunkId) {
-/******/ 		var script = document.createElement("script");
-/******/ 		script.charset = "utf-8";
-/******/ 		script.src = __webpack_require__.p + "" + chunkId + "." + hotCurrentHash + ".hot-update.js";
-/******/ 		if (null) script.crossOrigin = null;
-/******/ 		document.head.appendChild(script);
-/******/ 	}
 /******/
-/******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	function hotDownloadManifest(requestTimeout) {
-/******/ 		requestTimeout = requestTimeout || 10000;
-/******/ 		return new Promise(function(resolve, reject) {
-/******/ 			if (typeof XMLHttpRequest === "undefined") {
-/******/ 				return reject(new Error("No browser support"));
+/******/ 		// add "moreModules" to the modules object,
+/******/ 		// then flag all "chunkIds" as loaded and fire callback
+/******/ 		var moduleId, chunkId, i = 0, resolves = [];
+/******/ 		for(;i < chunkIds.length; i++) {
+/******/ 			chunkId = chunkIds[i];
+/******/ 			if(Object.prototype.hasOwnProperty.call(installedChunks, chunkId) && installedChunks[chunkId]) {
+/******/ 				resolves.push(installedChunks[chunkId][0]);
 /******/ 			}
-/******/ 			try {
-/******/ 				var request = new XMLHttpRequest();
-/******/ 				var requestPath = __webpack_require__.p + "" + hotCurrentHash + ".hot-update.json";
-/******/ 				request.open("GET", requestPath, true);
-/******/ 				request.timeout = requestTimeout;
-/******/ 				request.send(null);
-/******/ 			} catch (err) {
-/******/ 				return reject(err);
-/******/ 			}
-/******/ 			request.onreadystatechange = function() {
-/******/ 				if (request.readyState !== 4) return;
-/******/ 				if (request.status === 0) {
-/******/ 					// timeout
-/******/ 					reject(
-/******/ 						new Error("Manifest request to " + requestPath + " timed out.")
-/******/ 					);
-/******/ 				} else if (request.status === 404) {
-/******/ 					// no update available
-/******/ 					resolve();
-/******/ 				} else if (request.status !== 200 && request.status !== 304) {
-/******/ 					// other failure
-/******/ 					reject(new Error("Manifest request to " + requestPath + " failed."));
-/******/ 				} else {
-/******/ 					// success
-/******/ 					try {
-/******/ 						var update = JSON.parse(request.responseText);
-/******/ 					} catch (e) {
-/******/ 						reject(e);
-/******/ 						return;
-/******/ 					}
-/******/ 					resolve(update);
-/******/ 				}
-/******/ 			};
-/******/ 		});
-/******/ 	}
-/******/
-/******/ 	var hotApplyOnUpdate = true;
-/******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "ab8c6799b83dc39424a6";
-/******/ 	var hotRequestTimeout = 10000;
-/******/ 	var hotCurrentModuleData = {};
-/******/ 	var hotCurrentChildModule;
-/******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentParents = [];
-/******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentParentsTemp = [];
-/******/
-/******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	function hotCreateRequire(moduleId) {
-/******/ 		var me = installedModules[moduleId];
-/******/ 		if (!me) return __webpack_require__;
-/******/ 		var fn = function(request) {
-/******/ 			if (me.hot.active) {
-/******/ 				if (installedModules[request]) {
-/******/ 					if (installedModules[request].parents.indexOf(moduleId) === -1) {
-/******/ 						installedModules[request].parents.push(moduleId);
-/******/ 					}
-/******/ 				} else {
-/******/ 					hotCurrentParents = [moduleId];
-/******/ 					hotCurrentChildModule = request;
-/******/ 				}
-/******/ 				if (me.children.indexOf(request) === -1) {
-/******/ 					me.children.push(request);
-/******/ 				}
-/******/ 			} else {
-/******/ 				console.warn(
-/******/ 					"[HMR] unexpected require(" +
-/******/ 						request +
-/******/ 						") from disposed module " +
-/******/ 						moduleId
-/******/ 				);
-/******/ 				hotCurrentParents = [];
-/******/ 			}
-/******/ 			return __webpack_require__(request);
-/******/ 		};
-/******/ 		var ObjectFactory = function ObjectFactory(name) {
-/******/ 			return {
-/******/ 				configurable: true,
-/******/ 				enumerable: true,
-/******/ 				get: function() {
-/******/ 					return __webpack_require__[name];
-/******/ 				},
-/******/ 				set: function(value) {
-/******/ 					__webpack_require__[name] = value;
-/******/ 				}
-/******/ 			};
-/******/ 		};
-/******/ 		for (var name in __webpack_require__) {
-/******/ 			if (
-/******/ 				Object.prototype.hasOwnProperty.call(__webpack_require__, name) &&
-/******/ 				name !== "e" &&
-/******/ 				name !== "t"
-/******/ 			) {
-/******/ 				Object.defineProperty(fn, name, ObjectFactory(name));
+/******/ 			installedChunks[chunkId] = 0;
+/******/ 		}
+/******/ 		for(moduleId in moreModules) {
+/******/ 			if(Object.prototype.hasOwnProperty.call(moreModules, moduleId)) {
+/******/ 				modules[moduleId] = moreModules[moduleId];
 /******/ 			}
 /******/ 		}
-/******/ 		fn.e = function(chunkId) {
-/******/ 			if (hotStatus === "ready") hotSetStatus("prepare");
-/******/ 			hotChunksLoading++;
-/******/ 			return __webpack_require__.e(chunkId).then(finishChunkLoading, function(err) {
-/******/ 				finishChunkLoading();
-/******/ 				throw err;
-/******/ 			});
+/******/ 		if(parentJsonpFunction) parentJsonpFunction(data);
 /******/
-/******/ 			function finishChunkLoading() {
-/******/ 				hotChunksLoading--;
-/******/ 				if (hotStatus === "prepare") {
-/******/ 					if (!hotWaitingFilesMap[chunkId]) {
-/******/ 						hotEnsureUpdateChunk(chunkId);
-/******/ 					}
-/******/ 					if (hotChunksLoading === 0 && hotWaitingFiles === 0) {
-/******/ 						hotUpdateDownloaded();
-/******/ 					}
-/******/ 				}
-/******/ 			}
-/******/ 		};
-/******/ 		fn.t = function(value, mode) {
-/******/ 			if (mode & 1) value = fn(value);
-/******/ 			return __webpack_require__.t(value, mode & ~1);
-/******/ 		};
-/******/ 		return fn;
-/******/ 	}
-/******/
-/******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	function hotCreateModule(moduleId) {
-/******/ 		var hot = {
-/******/ 			// private stuff
-/******/ 			_acceptedDependencies: {},
-/******/ 			_declinedDependencies: {},
-/******/ 			_selfAccepted: false,
-/******/ 			_selfDeclined: false,
-/******/ 			_disposeHandlers: [],
-/******/ 			_main: hotCurrentChildModule !== moduleId,
-/******/
-/******/ 			// Module API
-/******/ 			active: true,
-/******/ 			accept: function(dep, callback) {
-/******/ 				if (dep === undefined) hot._selfAccepted = true;
-/******/ 				else if (typeof dep === "function") hot._selfAccepted = dep;
-/******/ 				else if (typeof dep === "object")
-/******/ 					for (var i = 0; i < dep.length; i++)
-/******/ 						hot._acceptedDependencies[dep[i]] = callback || function() {};
-/******/ 				else hot._acceptedDependencies[dep] = callback || function() {};
-/******/ 			},
-/******/ 			decline: function(dep) {
-/******/ 				if (dep === undefined) hot._selfDeclined = true;
-/******/ 				else if (typeof dep === "object")
-/******/ 					for (var i = 0; i < dep.length; i++)
-/******/ 						hot._declinedDependencies[dep[i]] = true;
-/******/ 				else hot._declinedDependencies[dep] = true;
-/******/ 			},
-/******/ 			dispose: function(callback) {
-/******/ 				hot._disposeHandlers.push(callback);
-/******/ 			},
-/******/ 			addDisposeHandler: function(callback) {
-/******/ 				hot._disposeHandlers.push(callback);
-/******/ 			},
-/******/ 			removeDisposeHandler: function(callback) {
-/******/ 				var idx = hot._disposeHandlers.indexOf(callback);
-/******/ 				if (idx >= 0) hot._disposeHandlers.splice(idx, 1);
-/******/ 			},
-/******/
-/******/ 			// Management API
-/******/ 			check: hotCheck,
-/******/ 			apply: hotApply,
-/******/ 			status: function(l) {
-/******/ 				if (!l) return hotStatus;
-/******/ 				hotStatusHandlers.push(l);
-/******/ 			},
-/******/ 			addStatusHandler: function(l) {
-/******/ 				hotStatusHandlers.push(l);
-/******/ 			},
-/******/ 			removeStatusHandler: function(l) {
-/******/ 				var idx = hotStatusHandlers.indexOf(l);
-/******/ 				if (idx >= 0) hotStatusHandlers.splice(idx, 1);
-/******/ 			},
-/******/
-/******/ 			//inherit from previous dispose call
-/******/ 			data: hotCurrentModuleData[moduleId]
-/******/ 		};
-/******/ 		hotCurrentChildModule = undefined;
-/******/ 		return hot;
-/******/ 	}
-/******/
-/******/ 	var hotStatusHandlers = [];
-/******/ 	var hotStatus = "idle";
-/******/
-/******/ 	function hotSetStatus(newStatus) {
-/******/ 		hotStatus = newStatus;
-/******/ 		for (var i = 0; i < hotStatusHandlers.length; i++)
-/******/ 			hotStatusHandlers[i].call(null, newStatus);
-/******/ 	}
-/******/
-/******/ 	// while downloading
-/******/ 	var hotWaitingFiles = 0;
-/******/ 	var hotChunksLoading = 0;
-/******/ 	var hotWaitingFilesMap = {};
-/******/ 	var hotRequestedFilesMap = {};
-/******/ 	var hotAvailableFilesMap = {};
-/******/ 	var hotDeferred;
-/******/
-/******/ 	// The update info
-/******/ 	var hotUpdate, hotUpdateNewHash;
-/******/
-/******/ 	function toModuleId(id) {
-/******/ 		var isNumber = +id + "" === id;
-/******/ 		return isNumber ? +id : id;
-/******/ 	}
-/******/
-/******/ 	function hotCheck(apply) {
-/******/ 		if (hotStatus !== "idle") {
-/******/ 			throw new Error("check() is only allowed in idle status");
-/******/ 		}
-/******/ 		hotApplyOnUpdate = apply;
-/******/ 		hotSetStatus("check");
-/******/ 		return hotDownloadManifest(hotRequestTimeout).then(function(update) {
-/******/ 			if (!update) {
-/******/ 				hotSetStatus("idle");
-/******/ 				return null;
-/******/ 			}
-/******/ 			hotRequestedFilesMap = {};
-/******/ 			hotWaitingFilesMap = {};
-/******/ 			hotAvailableFilesMap = update.c;
-/******/ 			hotUpdateNewHash = update.h;
-/******/
-/******/ 			hotSetStatus("prepare");
-/******/ 			var promise = new Promise(function(resolve, reject) {
-/******/ 				hotDeferred = {
-/******/ 					resolve: resolve,
-/******/ 					reject: reject
-/******/ 				};
-/******/ 			});
-/******/ 			hotUpdate = {};
-/******/ 			var chunkId = "main";
-/******/ 			// eslint-disable-next-line no-lone-blocks
-/******/ 			{
-/******/ 				/*globals chunkId */
-/******/ 				hotEnsureUpdateChunk(chunkId);
-/******/ 			}
-/******/ 			if (
-/******/ 				hotStatus === "prepare" &&
-/******/ 				hotChunksLoading === 0 &&
-/******/ 				hotWaitingFiles === 0
-/******/ 			) {
-/******/ 				hotUpdateDownloaded();
-/******/ 			}
-/******/ 			return promise;
-/******/ 		});
-/******/ 	}
-/******/
-/******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	function hotAddUpdateChunk(chunkId, moreModules) {
-/******/ 		if (!hotAvailableFilesMap[chunkId] || !hotRequestedFilesMap[chunkId])
-/******/ 			return;
-/******/ 		hotRequestedFilesMap[chunkId] = false;
-/******/ 		for (var moduleId in moreModules) {
-/******/ 			if (Object.prototype.hasOwnProperty.call(moreModules, moduleId)) {
-/******/ 				hotUpdate[moduleId] = moreModules[moduleId];
-/******/ 			}
-/******/ 		}
-/******/ 		if (--hotWaitingFiles === 0 && hotChunksLoading === 0) {
-/******/ 			hotUpdateDownloaded();
-/******/ 		}
-/******/ 	}
-/******/
-/******/ 	function hotEnsureUpdateChunk(chunkId) {
-/******/ 		if (!hotAvailableFilesMap[chunkId]) {
-/******/ 			hotWaitingFilesMap[chunkId] = true;
-/******/ 		} else {
-/******/ 			hotRequestedFilesMap[chunkId] = true;
-/******/ 			hotWaitingFiles++;
-/******/ 			hotDownloadUpdateChunk(chunkId);
-/******/ 		}
-/******/ 	}
-/******/
-/******/ 	function hotUpdateDownloaded() {
-/******/ 		hotSetStatus("ready");
-/******/ 		var deferred = hotDeferred;
-/******/ 		hotDeferred = null;
-/******/ 		if (!deferred) return;
-/******/ 		if (hotApplyOnUpdate) {
-/******/ 			// Wrap deferred object in Promise to mark it as a well-handled Promise to
-/******/ 			// avoid triggering uncaught exception warning in Chrome.
-/******/ 			// See https://bugs.chromium.org/p/chromium/issues/detail?id=465666
-/******/ 			Promise.resolve()
-/******/ 				.then(function() {
-/******/ 					return hotApply(hotApplyOnUpdate);
-/******/ 				})
-/******/ 				.then(
-/******/ 					function(result) {
-/******/ 						deferred.resolve(result);
-/******/ 					},
-/******/ 					function(err) {
-/******/ 						deferred.reject(err);
-/******/ 					}
-/******/ 				);
-/******/ 		} else {
-/******/ 			var outdatedModules = [];
-/******/ 			for (var id in hotUpdate) {
-/******/ 				if (Object.prototype.hasOwnProperty.call(hotUpdate, id)) {
-/******/ 					outdatedModules.push(toModuleId(id));
-/******/ 				}
-/******/ 			}
-/******/ 			deferred.resolve(outdatedModules);
-/******/ 		}
-/******/ 	}
-/******/
-/******/ 	function hotApply(options) {
-/******/ 		if (hotStatus !== "ready")
-/******/ 			throw new Error("apply() is only allowed in ready status");
-/******/ 		options = options || {};
-/******/
-/******/ 		var cb;
-/******/ 		var i;
-/******/ 		var j;
-/******/ 		var module;
-/******/ 		var moduleId;
-/******/
-/******/ 		function getAffectedStuff(updateModuleId) {
-/******/ 			var outdatedModules = [updateModuleId];
-/******/ 			var outdatedDependencies = {};
-/******/
-/******/ 			var queue = outdatedModules.map(function(id) {
-/******/ 				return {
-/******/ 					chain: [id],
-/******/ 					id: id
-/******/ 				};
-/******/ 			});
-/******/ 			while (queue.length > 0) {
-/******/ 				var queueItem = queue.pop();
-/******/ 				var moduleId = queueItem.id;
-/******/ 				var chain = queueItem.chain;
-/******/ 				module = installedModules[moduleId];
-/******/ 				if (!module || module.hot._selfAccepted) continue;
-/******/ 				if (module.hot._selfDeclined) {
-/******/ 					return {
-/******/ 						type: "self-declined",
-/******/ 						chain: chain,
-/******/ 						moduleId: moduleId
-/******/ 					};
-/******/ 				}
-/******/ 				if (module.hot._main) {
-/******/ 					return {
-/******/ 						type: "unaccepted",
-/******/ 						chain: chain,
-/******/ 						moduleId: moduleId
-/******/ 					};
-/******/ 				}
-/******/ 				for (var i = 0; i < module.parents.length; i++) {
-/******/ 					var parentId = module.parents[i];
-/******/ 					var parent = installedModules[parentId];
-/******/ 					if (!parent) continue;
-/******/ 					if (parent.hot._declinedDependencies[moduleId]) {
-/******/ 						return {
-/******/ 							type: "declined",
-/******/ 							chain: chain.concat([parentId]),
-/******/ 							moduleId: moduleId,
-/******/ 							parentId: parentId
-/******/ 						};
-/******/ 					}
-/******/ 					if (outdatedModules.indexOf(parentId) !== -1) continue;
-/******/ 					if (parent.hot._acceptedDependencies[moduleId]) {
-/******/ 						if (!outdatedDependencies[parentId])
-/******/ 							outdatedDependencies[parentId] = [];
-/******/ 						addAllToSet(outdatedDependencies[parentId], [moduleId]);
-/******/ 						continue;
-/******/ 					}
-/******/ 					delete outdatedDependencies[parentId];
-/******/ 					outdatedModules.push(parentId);
-/******/ 					queue.push({
-/******/ 						chain: chain.concat([parentId]),
-/******/ 						id: parentId
-/******/ 					});
-/******/ 				}
-/******/ 			}
-/******/
-/******/ 			return {
-/******/ 				type: "accepted",
-/******/ 				moduleId: updateModuleId,
-/******/ 				outdatedModules: outdatedModules,
-/******/ 				outdatedDependencies: outdatedDependencies
-/******/ 			};
+/******/ 		while(resolves.length) {
+/******/ 			resolves.shift()();
 /******/ 		}
 /******/
-/******/ 		function addAllToSet(a, b) {
-/******/ 			for (var i = 0; i < b.length; i++) {
-/******/ 				var item = b[i];
-/******/ 				if (a.indexOf(item) === -1) a.push(item);
-/******/ 			}
-/******/ 		}
+/******/ 	};
 /******/
-/******/ 		// at begin all updates modules are outdated
-/******/ 		// the "outdated" status can propagate to parents if they don't accept the children
-/******/ 		var outdatedDependencies = {};
-/******/ 		var outdatedModules = [];
-/******/ 		var appliedUpdate = {};
-/******/
-/******/ 		var warnUnexpectedRequire = function warnUnexpectedRequire() {
-/******/ 			console.warn(
-/******/ 				"[HMR] unexpected require(" + result.moduleId + ") to disposed module"
-/******/ 			);
-/******/ 		};
-/******/
-/******/ 		for (var id in hotUpdate) {
-/******/ 			if (Object.prototype.hasOwnProperty.call(hotUpdate, id)) {
-/******/ 				moduleId = toModuleId(id);
-/******/ 				/** @type {TODO} */
-/******/ 				var result;
-/******/ 				if (hotUpdate[id]) {
-/******/ 					result = getAffectedStuff(moduleId);
-/******/ 				} else {
-/******/ 					result = {
-/******/ 						type: "disposed",
-/******/ 						moduleId: id
-/******/ 					};
-/******/ 				}
-/******/ 				/** @type {Error|false} */
-/******/ 				var abortError = false;
-/******/ 				var doApply = false;
-/******/ 				var doDispose = false;
-/******/ 				var chainInfo = "";
-/******/ 				if (result.chain) {
-/******/ 					chainInfo = "\nUpdate propagation: " + result.chain.join(" -> ");
-/******/ 				}
-/******/ 				switch (result.type) {
-/******/ 					case "self-declined":
-/******/ 						if (options.onDeclined) options.onDeclined(result);
-/******/ 						if (!options.ignoreDeclined)
-/******/ 							abortError = new Error(
-/******/ 								"Aborted because of self decline: " +
-/******/ 									result.moduleId +
-/******/ 									chainInfo
-/******/ 							);
-/******/ 						break;
-/******/ 					case "declined":
-/******/ 						if (options.onDeclined) options.onDeclined(result);
-/******/ 						if (!options.ignoreDeclined)
-/******/ 							abortError = new Error(
-/******/ 								"Aborted because of declined dependency: " +
-/******/ 									result.moduleId +
-/******/ 									" in " +
-/******/ 									result.parentId +
-/******/ 									chainInfo
-/******/ 							);
-/******/ 						break;
-/******/ 					case "unaccepted":
-/******/ 						if (options.onUnaccepted) options.onUnaccepted(result);
-/******/ 						if (!options.ignoreUnaccepted)
-/******/ 							abortError = new Error(
-/******/ 								"Aborted because " + moduleId + " is not accepted" + chainInfo
-/******/ 							);
-/******/ 						break;
-/******/ 					case "accepted":
-/******/ 						if (options.onAccepted) options.onAccepted(result);
-/******/ 						doApply = true;
-/******/ 						break;
-/******/ 					case "disposed":
-/******/ 						if (options.onDisposed) options.onDisposed(result);
-/******/ 						doDispose = true;
-/******/ 						break;
-/******/ 					default:
-/******/ 						throw new Error("Unexception type " + result.type);
-/******/ 				}
-/******/ 				if (abortError) {
-/******/ 					hotSetStatus("abort");
-/******/ 					return Promise.reject(abortError);
-/******/ 				}
-/******/ 				if (doApply) {
-/******/ 					appliedUpdate[moduleId] = hotUpdate[moduleId];
-/******/ 					addAllToSet(outdatedModules, result.outdatedModules);
-/******/ 					for (moduleId in result.outdatedDependencies) {
-/******/ 						if (
-/******/ 							Object.prototype.hasOwnProperty.call(
-/******/ 								result.outdatedDependencies,
-/******/ 								moduleId
-/******/ 							)
-/******/ 						) {
-/******/ 							if (!outdatedDependencies[moduleId])
-/******/ 								outdatedDependencies[moduleId] = [];
-/******/ 							addAllToSet(
-/******/ 								outdatedDependencies[moduleId],
-/******/ 								result.outdatedDependencies[moduleId]
-/******/ 							);
-/******/ 						}
-/******/ 					}
-/******/ 				}
-/******/ 				if (doDispose) {
-/******/ 					addAllToSet(outdatedModules, [result.moduleId]);
-/******/ 					appliedUpdate[moduleId] = warnUnexpectedRequire;
-/******/ 				}
-/******/ 			}
-/******/ 		}
-/******/
-/******/ 		// Store self accepted outdated modules to require them later by the module system
-/******/ 		var outdatedSelfAcceptedModules = [];
-/******/ 		for (i = 0; i < outdatedModules.length; i++) {
-/******/ 			moduleId = outdatedModules[i];
-/******/ 			if (
-/******/ 				installedModules[moduleId] &&
-/******/ 				installedModules[moduleId].hot._selfAccepted &&
-/******/ 				// removed self-accepted modules should not be required
-/******/ 				appliedUpdate[moduleId] !== warnUnexpectedRequire
-/******/ 			) {
-/******/ 				outdatedSelfAcceptedModules.push({
-/******/ 					module: moduleId,
-/******/ 					errorHandler: installedModules[moduleId].hot._selfAccepted
-/******/ 				});
-/******/ 			}
-/******/ 		}
-/******/
-/******/ 		// Now in "dispose" phase
-/******/ 		hotSetStatus("dispose");
-/******/ 		Object.keys(hotAvailableFilesMap).forEach(function(chunkId) {
-/******/ 			if (hotAvailableFilesMap[chunkId] === false) {
-/******/ 				hotDisposeChunk(chunkId);
-/******/ 			}
-/******/ 		});
-/******/
-/******/ 		var idx;
-/******/ 		var queue = outdatedModules.slice();
-/******/ 		while (queue.length > 0) {
-/******/ 			moduleId = queue.pop();
-/******/ 			module = installedModules[moduleId];
-/******/ 			if (!module) continue;
-/******/
-/******/ 			var data = {};
-/******/
-/******/ 			// Call dispose handlers
-/******/ 			var disposeHandlers = module.hot._disposeHandlers;
-/******/ 			for (j = 0; j < disposeHandlers.length; j++) {
-/******/ 				cb = disposeHandlers[j];
-/******/ 				cb(data);
-/******/ 			}
-/******/ 			hotCurrentModuleData[moduleId] = data;
-/******/
-/******/ 			// disable module (this disables requires from this module)
-/******/ 			module.hot.active = false;
-/******/
-/******/ 			// remove module from cache
-/******/ 			delete installedModules[moduleId];
-/******/
-/******/ 			// when disposing there is no need to call dispose handler
-/******/ 			delete outdatedDependencies[moduleId];
-/******/
-/******/ 			// remove "parents" references from all children
-/******/ 			for (j = 0; j < module.children.length; j++) {
-/******/ 				var child = installedModules[module.children[j]];
-/******/ 				if (!child) continue;
-/******/ 				idx = child.parents.indexOf(moduleId);
-/******/ 				if (idx >= 0) {
-/******/ 					child.parents.splice(idx, 1);
-/******/ 				}
-/******/ 			}
-/******/ 		}
-/******/
-/******/ 		// remove outdated dependency from module children
-/******/ 		var dependency;
-/******/ 		var moduleOutdatedDependencies;
-/******/ 		for (moduleId in outdatedDependencies) {
-/******/ 			if (
-/******/ 				Object.prototype.hasOwnProperty.call(outdatedDependencies, moduleId)
-/******/ 			) {
-/******/ 				module = installedModules[moduleId];
-/******/ 				if (module) {
-/******/ 					moduleOutdatedDependencies = outdatedDependencies[moduleId];
-/******/ 					for (j = 0; j < moduleOutdatedDependencies.length; j++) {
-/******/ 						dependency = moduleOutdatedDependencies[j];
-/******/ 						idx = module.children.indexOf(dependency);
-/******/ 						if (idx >= 0) module.children.splice(idx, 1);
-/******/ 					}
-/******/ 				}
-/******/ 			}
-/******/ 		}
-/******/
-/******/ 		// Now in "apply" phase
-/******/ 		hotSetStatus("apply");
-/******/
-/******/ 		hotCurrentHash = hotUpdateNewHash;
-/******/
-/******/ 		// insert new code
-/******/ 		for (moduleId in appliedUpdate) {
-/******/ 			if (Object.prototype.hasOwnProperty.call(appliedUpdate, moduleId)) {
-/******/ 				modules[moduleId] = appliedUpdate[moduleId];
-/******/ 			}
-/******/ 		}
-/******/
-/******/ 		// call accept handlers
-/******/ 		var error = null;
-/******/ 		for (moduleId in outdatedDependencies) {
-/******/ 			if (
-/******/ 				Object.prototype.hasOwnProperty.call(outdatedDependencies, moduleId)
-/******/ 			) {
-/******/ 				module = installedModules[moduleId];
-/******/ 				if (module) {
-/******/ 					moduleOutdatedDependencies = outdatedDependencies[moduleId];
-/******/ 					var callbacks = [];
-/******/ 					for (i = 0; i < moduleOutdatedDependencies.length; i++) {
-/******/ 						dependency = moduleOutdatedDependencies[i];
-/******/ 						cb = module.hot._acceptedDependencies[dependency];
-/******/ 						if (cb) {
-/******/ 							if (callbacks.indexOf(cb) !== -1) continue;
-/******/ 							callbacks.push(cb);
-/******/ 						}
-/******/ 					}
-/******/ 					for (i = 0; i < callbacks.length; i++) {
-/******/ 						cb = callbacks[i];
-/******/ 						try {
-/******/ 							cb(moduleOutdatedDependencies);
-/******/ 						} catch (err) {
-/******/ 							if (options.onErrored) {
-/******/ 								options.onErrored({
-/******/ 									type: "accept-errored",
-/******/ 									moduleId: moduleId,
-/******/ 									dependencyId: moduleOutdatedDependencies[i],
-/******/ 									error: err
-/******/ 								});
-/******/ 							}
-/******/ 							if (!options.ignoreErrored) {
-/******/ 								if (!error) error = err;
-/******/ 							}
-/******/ 						}
-/******/ 					}
-/******/ 				}
-/******/ 			}
-/******/ 		}
-/******/
-/******/ 		// Load self accepted modules
-/******/ 		for (i = 0; i < outdatedSelfAcceptedModules.length; i++) {
-/******/ 			var item = outdatedSelfAcceptedModules[i];
-/******/ 			moduleId = item.module;
-/******/ 			hotCurrentParents = [moduleId];
-/******/ 			try {
-/******/ 				__webpack_require__(moduleId);
-/******/ 			} catch (err) {
-/******/ 				if (typeof item.errorHandler === "function") {
-/******/ 					try {
-/******/ 						item.errorHandler(err);
-/******/ 					} catch (err2) {
-/******/ 						if (options.onErrored) {
-/******/ 							options.onErrored({
-/******/ 								type: "self-accept-error-handler-errored",
-/******/ 								moduleId: moduleId,
-/******/ 								error: err2,
-/******/ 								originalError: err
-/******/ 							});
-/******/ 						}
-/******/ 						if (!options.ignoreErrored) {
-/******/ 							if (!error) error = err2;
-/******/ 						}
-/******/ 						if (!error) error = err;
-/******/ 					}
-/******/ 				} else {
-/******/ 					if (options.onErrored) {
-/******/ 						options.onErrored({
-/******/ 							type: "self-accept-errored",
-/******/ 							moduleId: moduleId,
-/******/ 							error: err
-/******/ 						});
-/******/ 					}
-/******/ 					if (!options.ignoreErrored) {
-/******/ 						if (!error) error = err;
-/******/ 					}
-/******/ 				}
-/******/ 			}
-/******/ 		}
-/******/
-/******/ 		// handle errors in accept handlers and self accepted module load
-/******/ 		if (error) {
-/******/ 			hotSetStatus("fail");
-/******/ 			return Promise.reject(error);
-/******/ 		}
-/******/
-/******/ 		hotSetStatus("idle");
-/******/ 		return new Promise(function(resolve) {
-/******/ 			resolve(outdatedModules);
-/******/ 		});
-/******/ 	}
 /******/
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
+/******/
+/******/ 	// object to store loaded and loading chunks
+/******/ 	// undefined = chunk not loaded, null = chunk preloaded/prefetched
+/******/ 	// Promise = chunk loading, 0 = chunk loaded
+/******/ 	var installedChunks = {
+/******/ 		"main": 0
+/******/ 	};
+/******/
+/******/
+/******/
+/******/ 	// script path function
+/******/ 	function jsonpScriptSrc(chunkId) {
+/******/ 		return __webpack_require__.p + "" + ({}[chunkId]||chunkId) + ".js"
+/******/ 	}
 /******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
@@ -717,14 +57,11 @@
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			i: moduleId,
 /******/ 			l: false,
-/******/ 			exports: {},
-/******/ 			hot: hotCreateModule(moduleId),
-/******/ 			parents: (hotCurrentParentsTemp = hotCurrentParents, hotCurrentParents = [], hotCurrentParentsTemp),
-/******/ 			children: []
+/******/ 			exports: {}
 /******/ 		};
 /******/
 /******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, hotCreateRequire(moduleId));
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
 /******/
 /******/ 		// Flag the module as loaded
 /******/ 		module.l = true;
@@ -733,6 +70,67 @@
 /******/ 		return module.exports;
 /******/ 	}
 /******/
+/******/ 	// This file contains only the entry chunk.
+/******/ 	// The chunk loading function for additional chunks
+/******/ 	__webpack_require__.e = function requireEnsure(chunkId) {
+/******/ 		var promises = [];
+/******/
+/******/
+/******/ 		// JSONP chunk loading for javascript
+/******/
+/******/ 		var installedChunkData = installedChunks[chunkId];
+/******/ 		if(installedChunkData !== 0) { // 0 means "already installed".
+/******/
+/******/ 			// a Promise means "currently loading".
+/******/ 			if(installedChunkData) {
+/******/ 				promises.push(installedChunkData[2]);
+/******/ 			} else {
+/******/ 				// setup Promise in chunk cache
+/******/ 				var promise = new Promise(function(resolve, reject) {
+/******/ 					installedChunkData = installedChunks[chunkId] = [resolve, reject];
+/******/ 				});
+/******/ 				promises.push(installedChunkData[2] = promise);
+/******/
+/******/ 				// start chunk loading
+/******/ 				var script = document.createElement('script');
+/******/ 				var onScriptComplete;
+/******/
+/******/ 				script.charset = 'utf-8';
+/******/ 				script.timeout = 120;
+/******/ 				if (__webpack_require__.nc) {
+/******/ 					script.setAttribute("nonce", __webpack_require__.nc);
+/******/ 				}
+/******/ 				script.src = jsonpScriptSrc(chunkId);
+/******/
+/******/ 				// create error before stack unwound to get useful stacktrace later
+/******/ 				var error = new Error();
+/******/ 				onScriptComplete = function (event) {
+/******/ 					// avoid mem leaks in IE.
+/******/ 					script.onerror = script.onload = null;
+/******/ 					clearTimeout(timeout);
+/******/ 					var chunk = installedChunks[chunkId];
+/******/ 					if(chunk !== 0) {
+/******/ 						if(chunk) {
+/******/ 							var errorType = event && (event.type === 'load' ? 'missing' : event.type);
+/******/ 							var realSrc = event && event.target && event.target.src;
+/******/ 							error.message = 'Loading chunk ' + chunkId + ' failed.\n(' + errorType + ': ' + realSrc + ')';
+/******/ 							error.name = 'ChunkLoadError';
+/******/ 							error.type = errorType;
+/******/ 							error.request = realSrc;
+/******/ 							chunk[1](error);
+/******/ 						}
+/******/ 						installedChunks[chunkId] = undefined;
+/******/ 					}
+/******/ 				};
+/******/ 				var timeout = setTimeout(function(){
+/******/ 					onScriptComplete({ type: 'timeout', target: script });
+/******/ 				}, 120000);
+/******/ 				script.onerror = script.onload = onScriptComplete;
+/******/ 				document.head.appendChild(script);
+/******/ 			}
+/******/ 		}
+/******/ 		return Promise.all(promises);
+/******/ 	};
 /******/
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
@@ -786,15 +184,333 @@
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "/static/";
 /******/
-/******/ 	// __webpack_hash__
-/******/ 	__webpack_require__.h = function() { return hotCurrentHash; };
+/******/ 	// on error function for async loading
+/******/ 	__webpack_require__.oe = function(err) { console.error(err); throw err; };
+/******/
+/******/ 	var jsonpArray = window["webpackJsonp"] = window["webpackJsonp"] || [];
+/******/ 	var oldJsonpFunction = jsonpArray.push.bind(jsonpArray);
+/******/ 	jsonpArray.push = webpackJsonpCallback;
+/******/ 	jsonpArray = jsonpArray.slice();
+/******/ 	for(var i = 0; i < jsonpArray.length; i++) webpackJsonpCallback(jsonpArray[i]);
+/******/ 	var parentJsonpFunction = oldJsonpFunction;
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return hotCreateRequire("./src/index.js")(__webpack_require__.s = "./src/index.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/index.js");
 /******/ })
 /************************************************************************/
 /******/ ({
+
+/***/ "./node_modules/axios/index.js":
+/*!*************************************!*\
+  !*** ./node_modules/axios/index.js ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+eval("module.exports = __webpack_require__(/*! ./lib/axios */ \"./node_modules/axios/lib/axios.js\");\n\n//# sourceURL=webpack:///./node_modules/axios/index.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/adapters/xhr.js":
+/*!************************************************!*\
+  !*** ./node_modules/axios/lib/adapters/xhr.js ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nvar utils = __webpack_require__(/*! ./../utils */ \"./node_modules/axios/lib/utils.js\");\n\nvar settle = __webpack_require__(/*! ./../core/settle */ \"./node_modules/axios/lib/core/settle.js\");\n\nvar cookies = __webpack_require__(/*! ./../helpers/cookies */ \"./node_modules/axios/lib/helpers/cookies.js\");\n\nvar buildURL = __webpack_require__(/*! ./../helpers/buildURL */ \"./node_modules/axios/lib/helpers/buildURL.js\");\n\nvar buildFullPath = __webpack_require__(/*! ../core/buildFullPath */ \"./node_modules/axios/lib/core/buildFullPath.js\");\n\nvar parseHeaders = __webpack_require__(/*! ./../helpers/parseHeaders */ \"./node_modules/axios/lib/helpers/parseHeaders.js\");\n\nvar isURLSameOrigin = __webpack_require__(/*! ./../helpers/isURLSameOrigin */ \"./node_modules/axios/lib/helpers/isURLSameOrigin.js\");\n\nvar createError = __webpack_require__(/*! ../core/createError */ \"./node_modules/axios/lib/core/createError.js\");\n\nmodule.exports = function xhrAdapter(config) {\n  return new Promise(function dispatchXhrRequest(resolve, reject) {\n    var requestData = config.data;\n    var requestHeaders = config.headers;\n\n    if (utils.isFormData(requestData)) {\n      delete requestHeaders['Content-Type']; // Let the browser set it\n    }\n\n    if ((utils.isBlob(requestData) || utils.isFile(requestData)) && requestData.type) {\n      delete requestHeaders['Content-Type']; // Let the browser set it\n    }\n\n    var request = new XMLHttpRequest(); // HTTP basic authentication\n\n    if (config.auth) {\n      var username = config.auth.username || '';\n      var password = unescape(encodeURIComponent(config.auth.password)) || '';\n      requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);\n    }\n\n    var fullPath = buildFullPath(config.baseURL, config.url);\n    request.open(config.method.toUpperCase(), buildURL(fullPath, config.params, config.paramsSerializer), true); // Set the request timeout in MS\n\n    request.timeout = config.timeout; // Listen for ready state\n\n    request.onreadystatechange = function handleLoad() {\n      if (!request || request.readyState !== 4) {\n        return;\n      } // The request errored out and we didn't get a response, this will be\n      // handled by onerror instead\n      // With one exception: request that using file: protocol, most browsers\n      // will return status as 0 even though it's a successful request\n\n\n      if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf('file:') === 0)) {\n        return;\n      } // Prepare the response\n\n\n      var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;\n      var responseData = !config.responseType || config.responseType === 'text' ? request.responseText : request.response;\n      var response = {\n        data: responseData,\n        status: request.status,\n        statusText: request.statusText,\n        headers: responseHeaders,\n        config: config,\n        request: request\n      };\n      settle(resolve, reject, response); // Clean up request\n\n      request = null;\n    }; // Handle browser request cancellation (as opposed to a manual cancellation)\n\n\n    request.onabort = function handleAbort() {\n      if (!request) {\n        return;\n      }\n\n      reject(createError('Request aborted', config, 'ECONNABORTED', request)); // Clean up request\n\n      request = null;\n    }; // Handle low level network errors\n\n\n    request.onerror = function handleError() {\n      // Real errors are hidden from us by the browser\n      // onerror should only fire if it's a network error\n      reject(createError('Network Error', config, null, request)); // Clean up request\n\n      request = null;\n    }; // Handle timeout\n\n\n    request.ontimeout = function handleTimeout() {\n      var timeoutErrorMessage = 'timeout of ' + config.timeout + 'ms exceeded';\n\n      if (config.timeoutErrorMessage) {\n        timeoutErrorMessage = config.timeoutErrorMessage;\n      }\n\n      reject(createError(timeoutErrorMessage, config, 'ECONNABORTED', request)); // Clean up request\n\n      request = null;\n    }; // Add xsrf header\n    // This is only done if running in a standard browser environment.\n    // Specifically not if we're in a web worker, or react-native.\n\n\n    if (utils.isStandardBrowserEnv()) {\n      // Add xsrf header\n      var xsrfValue = (config.withCredentials || isURLSameOrigin(fullPath)) && config.xsrfCookieName ? cookies.read(config.xsrfCookieName) : undefined;\n\n      if (xsrfValue) {\n        requestHeaders[config.xsrfHeaderName] = xsrfValue;\n      }\n    } // Add headers to the request\n\n\n    if ('setRequestHeader' in request) {\n      utils.forEach(requestHeaders, function setRequestHeader(val, key) {\n        if (typeof requestData === 'undefined' && key.toLowerCase() === 'content-type') {\n          // Remove Content-Type if data is undefined\n          delete requestHeaders[key];\n        } else {\n          // Otherwise add header to the request\n          request.setRequestHeader(key, val);\n        }\n      });\n    } // Add withCredentials to request if needed\n\n\n    if (!utils.isUndefined(config.withCredentials)) {\n      request.withCredentials = !!config.withCredentials;\n    } // Add responseType to request if needed\n\n\n    if (config.responseType) {\n      try {\n        request.responseType = config.responseType;\n      } catch (e) {\n        // Expected DOMException thrown by browsers not compatible XMLHttpRequest Level 2.\n        // But, this can be suppressed for 'json' type as it can be parsed by default 'transformResponse' function.\n        if (config.responseType !== 'json') {\n          throw e;\n        }\n      }\n    } // Handle progress if needed\n\n\n    if (typeof config.onDownloadProgress === 'function') {\n      request.addEventListener('progress', config.onDownloadProgress);\n    } // Not all browsers support upload events\n\n\n    if (typeof config.onUploadProgress === 'function' && request.upload) {\n      request.upload.addEventListener('progress', config.onUploadProgress);\n    }\n\n    if (config.cancelToken) {\n      // Handle cancellation\n      config.cancelToken.promise.then(function onCanceled(cancel) {\n        if (!request) {\n          return;\n        }\n\n        request.abort();\n        reject(cancel); // Clean up request\n\n        request = null;\n      });\n    }\n\n    if (!requestData) {\n      requestData = null;\n    } // Send the request\n\n\n    request.send(requestData);\n  });\n};\n\n//# sourceURL=webpack:///./node_modules/axios/lib/adapters/xhr.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/axios.js":
+/*!*****************************************!*\
+  !*** ./node_modules/axios/lib/axios.js ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nvar utils = __webpack_require__(/*! ./utils */ \"./node_modules/axios/lib/utils.js\");\n\nvar bind = __webpack_require__(/*! ./helpers/bind */ \"./node_modules/axios/lib/helpers/bind.js\");\n\nvar Axios = __webpack_require__(/*! ./core/Axios */ \"./node_modules/axios/lib/core/Axios.js\");\n\nvar mergeConfig = __webpack_require__(/*! ./core/mergeConfig */ \"./node_modules/axios/lib/core/mergeConfig.js\");\n\nvar defaults = __webpack_require__(/*! ./defaults */ \"./node_modules/axios/lib/defaults.js\");\n/**\n * Create an instance of Axios\n *\n * @param {Object} defaultConfig The default config for the instance\n * @return {Axios} A new instance of Axios\n */\n\n\nfunction createInstance(defaultConfig) {\n  var context = new Axios(defaultConfig);\n  var instance = bind(Axios.prototype.request, context); // Copy axios.prototype to instance\n\n  utils.extend(instance, Axios.prototype, context); // Copy context to instance\n\n  utils.extend(instance, context);\n  return instance;\n} // Create the default instance to be exported\n\n\nvar axios = createInstance(defaults); // Expose Axios class to allow class inheritance\n\naxios.Axios = Axios; // Factory for creating new instances\n\naxios.create = function create(instanceConfig) {\n  return createInstance(mergeConfig(axios.defaults, instanceConfig));\n}; // Expose Cancel & CancelToken\n\n\naxios.Cancel = __webpack_require__(/*! ./cancel/Cancel */ \"./node_modules/axios/lib/cancel/Cancel.js\");\naxios.CancelToken = __webpack_require__(/*! ./cancel/CancelToken */ \"./node_modules/axios/lib/cancel/CancelToken.js\");\naxios.isCancel = __webpack_require__(/*! ./cancel/isCancel */ \"./node_modules/axios/lib/cancel/isCancel.js\"); // Expose all/spread\n\naxios.all = function all(promises) {\n  return Promise.all(promises);\n};\n\naxios.spread = __webpack_require__(/*! ./helpers/spread */ \"./node_modules/axios/lib/helpers/spread.js\");\nmodule.exports = axios; // Allow use of default import syntax in TypeScript\n\nmodule.exports.default = axios;\n\n//# sourceURL=webpack:///./node_modules/axios/lib/axios.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/cancel/Cancel.js":
+/*!*************************************************!*\
+  !*** ./node_modules/axios/lib/cancel/Cancel.js ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n/**\n * A `Cancel` is an object that is thrown when an operation is canceled.\n *\n * @class\n * @param {string=} message The message.\n */\n\nfunction Cancel(message) {\n  this.message = message;\n}\n\nCancel.prototype.toString = function toString() {\n  return 'Cancel' + (this.message ? ': ' + this.message : '');\n};\n\nCancel.prototype.__CANCEL__ = true;\nmodule.exports = Cancel;\n\n//# sourceURL=webpack:///./node_modules/axios/lib/cancel/Cancel.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/cancel/CancelToken.js":
+/*!******************************************************!*\
+  !*** ./node_modules/axios/lib/cancel/CancelToken.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nvar Cancel = __webpack_require__(/*! ./Cancel */ \"./node_modules/axios/lib/cancel/Cancel.js\");\n/**\n * A `CancelToken` is an object that can be used to request cancellation of an operation.\n *\n * @class\n * @param {Function} executor The executor function.\n */\n\n\nfunction CancelToken(executor) {\n  if (typeof executor !== 'function') {\n    throw new TypeError('executor must be a function.');\n  }\n\n  var resolvePromise;\n  this.promise = new Promise(function promiseExecutor(resolve) {\n    resolvePromise = resolve;\n  });\n  var token = this;\n  executor(function cancel(message) {\n    if (token.reason) {\n      // Cancellation has already been requested\n      return;\n    }\n\n    token.reason = new Cancel(message);\n    resolvePromise(token.reason);\n  });\n}\n/**\n * Throws a `Cancel` if cancellation has been requested.\n */\n\n\nCancelToken.prototype.throwIfRequested = function throwIfRequested() {\n  if (this.reason) {\n    throw this.reason;\n  }\n};\n/**\n * Returns an object that contains a new `CancelToken` and a function that, when called,\n * cancels the `CancelToken`.\n */\n\n\nCancelToken.source = function source() {\n  var cancel;\n  var token = new CancelToken(function executor(c) {\n    cancel = c;\n  });\n  return {\n    token: token,\n    cancel: cancel\n  };\n};\n\nmodule.exports = CancelToken;\n\n//# sourceURL=webpack:///./node_modules/axios/lib/cancel/CancelToken.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/cancel/isCancel.js":
+/*!***************************************************!*\
+  !*** ./node_modules/axios/lib/cancel/isCancel.js ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nmodule.exports = function isCancel(value) {\n  return !!(value && value.__CANCEL__);\n};\n\n//# sourceURL=webpack:///./node_modules/axios/lib/cancel/isCancel.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/Axios.js":
+/*!**********************************************!*\
+  !*** ./node_modules/axios/lib/core/Axios.js ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nvar utils = __webpack_require__(/*! ./../utils */ \"./node_modules/axios/lib/utils.js\");\n\nvar buildURL = __webpack_require__(/*! ../helpers/buildURL */ \"./node_modules/axios/lib/helpers/buildURL.js\");\n\nvar InterceptorManager = __webpack_require__(/*! ./InterceptorManager */ \"./node_modules/axios/lib/core/InterceptorManager.js\");\n\nvar dispatchRequest = __webpack_require__(/*! ./dispatchRequest */ \"./node_modules/axios/lib/core/dispatchRequest.js\");\n\nvar mergeConfig = __webpack_require__(/*! ./mergeConfig */ \"./node_modules/axios/lib/core/mergeConfig.js\");\n/**\n * Create a new instance of Axios\n *\n * @param {Object} instanceConfig The default config for the instance\n */\n\n\nfunction Axios(instanceConfig) {\n  this.defaults = instanceConfig;\n  this.interceptors = {\n    request: new InterceptorManager(),\n    response: new InterceptorManager()\n  };\n}\n/**\n * Dispatch a request\n *\n * @param {Object} config The config specific for this request (merged with this.defaults)\n */\n\n\nAxios.prototype.request = function request(config) {\n  /*eslint no-param-reassign:0*/\n  // Allow for axios('example/url'[, config]) a la fetch API\n  if (typeof config === 'string') {\n    config = arguments[1] || {};\n    config.url = arguments[0];\n  } else {\n    config = config || {};\n  }\n\n  config = mergeConfig(this.defaults, config); // Set config.method\n\n  if (config.method) {\n    config.method = config.method.toLowerCase();\n  } else if (this.defaults.method) {\n    config.method = this.defaults.method.toLowerCase();\n  } else {\n    config.method = 'get';\n  } // Hook up interceptors middleware\n\n\n  var chain = [dispatchRequest, undefined];\n  var promise = Promise.resolve(config);\n  this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {\n    chain.unshift(interceptor.fulfilled, interceptor.rejected);\n  });\n  this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {\n    chain.push(interceptor.fulfilled, interceptor.rejected);\n  });\n\n  while (chain.length) {\n    promise = promise.then(chain.shift(), chain.shift());\n  }\n\n  return promise;\n};\n\nAxios.prototype.getUri = function getUri(config) {\n  config = mergeConfig(this.defaults, config);\n  return buildURL(config.url, config.params, config.paramsSerializer).replace(/^\\?/, '');\n}; // Provide aliases for supported request methods\n\n\nutils.forEach(['delete', 'get', 'head', 'options'], function forEachMethodNoData(method) {\n  /*eslint func-names:0*/\n  Axios.prototype[method] = function (url, config) {\n    return this.request(mergeConfig(config || {}, {\n      method: method,\n      url: url\n    }));\n  };\n});\nutils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {\n  /*eslint func-names:0*/\n  Axios.prototype[method] = function (url, data, config) {\n    return this.request(mergeConfig(config || {}, {\n      method: method,\n      url: url,\n      data: data\n    }));\n  };\n});\nmodule.exports = Axios;\n\n//# sourceURL=webpack:///./node_modules/axios/lib/core/Axios.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/InterceptorManager.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/axios/lib/core/InterceptorManager.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nvar utils = __webpack_require__(/*! ./../utils */ \"./node_modules/axios/lib/utils.js\");\n\nfunction InterceptorManager() {\n  this.handlers = [];\n}\n/**\n * Add a new interceptor to the stack\n *\n * @param {Function} fulfilled The function to handle `then` for a `Promise`\n * @param {Function} rejected The function to handle `reject` for a `Promise`\n *\n * @return {Number} An ID used to remove interceptor later\n */\n\n\nInterceptorManager.prototype.use = function use(fulfilled, rejected) {\n  this.handlers.push({\n    fulfilled: fulfilled,\n    rejected: rejected\n  });\n  return this.handlers.length - 1;\n};\n/**\n * Remove an interceptor from the stack\n *\n * @param {Number} id The ID that was returned by `use`\n */\n\n\nInterceptorManager.prototype.eject = function eject(id) {\n  if (this.handlers[id]) {\n    this.handlers[id] = null;\n  }\n};\n/**\n * Iterate over all the registered interceptors\n *\n * This method is particularly useful for skipping over any\n * interceptors that may have become `null` calling `eject`.\n *\n * @param {Function} fn The function to call for each interceptor\n */\n\n\nInterceptorManager.prototype.forEach = function forEach(fn) {\n  utils.forEach(this.handlers, function forEachHandler(h) {\n    if (h !== null) {\n      fn(h);\n    }\n  });\n};\n\nmodule.exports = InterceptorManager;\n\n//# sourceURL=webpack:///./node_modules/axios/lib/core/InterceptorManager.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/buildFullPath.js":
+/*!******************************************************!*\
+  !*** ./node_modules/axios/lib/core/buildFullPath.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nvar isAbsoluteURL = __webpack_require__(/*! ../helpers/isAbsoluteURL */ \"./node_modules/axios/lib/helpers/isAbsoluteURL.js\");\n\nvar combineURLs = __webpack_require__(/*! ../helpers/combineURLs */ \"./node_modules/axios/lib/helpers/combineURLs.js\");\n/**\n * Creates a new URL by combining the baseURL with the requestedURL,\n * only when the requestedURL is not already an absolute URL.\n * If the requestURL is absolute, this function returns the requestedURL untouched.\n *\n * @param {string} baseURL The base URL\n * @param {string} requestedURL Absolute or relative URL to combine\n * @returns {string} The combined full path\n */\n\n\nmodule.exports = function buildFullPath(baseURL, requestedURL) {\n  if (baseURL && !isAbsoluteURL(requestedURL)) {\n    return combineURLs(baseURL, requestedURL);\n  }\n\n  return requestedURL;\n};\n\n//# sourceURL=webpack:///./node_modules/axios/lib/core/buildFullPath.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/createError.js":
+/*!****************************************************!*\
+  !*** ./node_modules/axios/lib/core/createError.js ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nvar enhanceError = __webpack_require__(/*! ./enhanceError */ \"./node_modules/axios/lib/core/enhanceError.js\");\n/**\n * Create an Error with the specified message, config, error code, request and response.\n *\n * @param {string} message The error message.\n * @param {Object} config The config.\n * @param {string} [code] The error code (for example, 'ECONNABORTED').\n * @param {Object} [request] The request.\n * @param {Object} [response] The response.\n * @returns {Error} The created error.\n */\n\n\nmodule.exports = function createError(message, config, code, request, response) {\n  var error = new Error(message);\n  return enhanceError(error, config, code, request, response);\n};\n\n//# sourceURL=webpack:///./node_modules/axios/lib/core/createError.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/dispatchRequest.js":
+/*!********************************************************!*\
+  !*** ./node_modules/axios/lib/core/dispatchRequest.js ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nvar utils = __webpack_require__(/*! ./../utils */ \"./node_modules/axios/lib/utils.js\");\n\nvar transformData = __webpack_require__(/*! ./transformData */ \"./node_modules/axios/lib/core/transformData.js\");\n\nvar isCancel = __webpack_require__(/*! ../cancel/isCancel */ \"./node_modules/axios/lib/cancel/isCancel.js\");\n\nvar defaults = __webpack_require__(/*! ../defaults */ \"./node_modules/axios/lib/defaults.js\");\n/**\n * Throws a `Cancel` if cancellation has been requested.\n */\n\n\nfunction throwIfCancellationRequested(config) {\n  if (config.cancelToken) {\n    config.cancelToken.throwIfRequested();\n  }\n}\n/**\n * Dispatch a request to the server using the configured adapter.\n *\n * @param {object} config The config that is to be used for the request\n * @returns {Promise} The Promise to be fulfilled\n */\n\n\nmodule.exports = function dispatchRequest(config) {\n  throwIfCancellationRequested(config); // Ensure headers exist\n\n  config.headers = config.headers || {}; // Transform request data\n\n  config.data = transformData(config.data, config.headers, config.transformRequest); // Flatten headers\n\n  config.headers = utils.merge(config.headers.common || {}, config.headers[config.method] || {}, config.headers);\n  utils.forEach(['delete', 'get', 'head', 'post', 'put', 'patch', 'common'], function cleanHeaderConfig(method) {\n    delete config.headers[method];\n  });\n  var adapter = config.adapter || defaults.adapter;\n  return adapter(config).then(function onAdapterResolution(response) {\n    throwIfCancellationRequested(config); // Transform response data\n\n    response.data = transformData(response.data, response.headers, config.transformResponse);\n    return response;\n  }, function onAdapterRejection(reason) {\n    if (!isCancel(reason)) {\n      throwIfCancellationRequested(config); // Transform response data\n\n      if (reason && reason.response) {\n        reason.response.data = transformData(reason.response.data, reason.response.headers, config.transformResponse);\n      }\n    }\n\n    return Promise.reject(reason);\n  });\n};\n\n//# sourceURL=webpack:///./node_modules/axios/lib/core/dispatchRequest.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/enhanceError.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/axios/lib/core/enhanceError.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n/**\n * Update an Error with the specified config, error code, and response.\n *\n * @param {Error} error The error to update.\n * @param {Object} config The config.\n * @param {string} [code] The error code (for example, 'ECONNABORTED').\n * @param {Object} [request] The request.\n * @param {Object} [response] The response.\n * @returns {Error} The error.\n */\n\nmodule.exports = function enhanceError(error, config, code, request, response) {\n  error.config = config;\n\n  if (code) {\n    error.code = code;\n  }\n\n  error.request = request;\n  error.response = response;\n  error.isAxiosError = true;\n\n  error.toJSON = function toJSON() {\n    return {\n      // Standard\n      message: this.message,\n      name: this.name,\n      // Microsoft\n      description: this.description,\n      number: this.number,\n      // Mozilla\n      fileName: this.fileName,\n      lineNumber: this.lineNumber,\n      columnNumber: this.columnNumber,\n      stack: this.stack,\n      // Axios\n      config: this.config,\n      code: this.code\n    };\n  };\n\n  return error;\n};\n\n//# sourceURL=webpack:///./node_modules/axios/lib/core/enhanceError.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/mergeConfig.js":
+/*!****************************************************!*\
+  !*** ./node_modules/axios/lib/core/mergeConfig.js ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nvar utils = __webpack_require__(/*! ../utils */ \"./node_modules/axios/lib/utils.js\");\n/**\n * Config-specific merge-function which creates a new config-object\n * by merging two configuration objects together.\n *\n * @param {Object} config1\n * @param {Object} config2\n * @returns {Object} New object resulting from merging config2 to config1\n */\n\n\nmodule.exports = function mergeConfig(config1, config2) {\n  // eslint-disable-next-line no-param-reassign\n  config2 = config2 || {};\n  var config = {};\n  var valueFromConfig2Keys = ['url', 'method', 'data'];\n  var mergeDeepPropertiesKeys = ['headers', 'auth', 'proxy', 'params'];\n  var defaultToConfig2Keys = ['baseURL', 'transformRequest', 'transformResponse', 'paramsSerializer', 'timeout', 'timeoutMessage', 'withCredentials', 'adapter', 'responseType', 'xsrfCookieName', 'xsrfHeaderName', 'onUploadProgress', 'onDownloadProgress', 'decompress', 'maxContentLength', 'maxBodyLength', 'maxRedirects', 'transport', 'httpAgent', 'httpsAgent', 'cancelToken', 'socketPath', 'responseEncoding'];\n  var directMergeKeys = ['validateStatus'];\n\n  function getMergedValue(target, source) {\n    if (utils.isPlainObject(target) && utils.isPlainObject(source)) {\n      return utils.merge(target, source);\n    } else if (utils.isPlainObject(source)) {\n      return utils.merge({}, source);\n    } else if (utils.isArray(source)) {\n      return source.slice();\n    }\n\n    return source;\n  }\n\n  function mergeDeepProperties(prop) {\n    if (!utils.isUndefined(config2[prop])) {\n      config[prop] = getMergedValue(config1[prop], config2[prop]);\n    } else if (!utils.isUndefined(config1[prop])) {\n      config[prop] = getMergedValue(undefined, config1[prop]);\n    }\n  }\n\n  utils.forEach(valueFromConfig2Keys, function valueFromConfig2(prop) {\n    if (!utils.isUndefined(config2[prop])) {\n      config[prop] = getMergedValue(undefined, config2[prop]);\n    }\n  });\n  utils.forEach(mergeDeepPropertiesKeys, mergeDeepProperties);\n  utils.forEach(defaultToConfig2Keys, function defaultToConfig2(prop) {\n    if (!utils.isUndefined(config2[prop])) {\n      config[prop] = getMergedValue(undefined, config2[prop]);\n    } else if (!utils.isUndefined(config1[prop])) {\n      config[prop] = getMergedValue(undefined, config1[prop]);\n    }\n  });\n  utils.forEach(directMergeKeys, function merge(prop) {\n    if (prop in config2) {\n      config[prop] = getMergedValue(config1[prop], config2[prop]);\n    } else if (prop in config1) {\n      config[prop] = getMergedValue(undefined, config1[prop]);\n    }\n  });\n  var axiosKeys = valueFromConfig2Keys.concat(mergeDeepPropertiesKeys).concat(defaultToConfig2Keys).concat(directMergeKeys);\n  var otherKeys = Object.keys(config1).concat(Object.keys(config2)).filter(function filterAxiosKeys(key) {\n    return axiosKeys.indexOf(key) === -1;\n  });\n  utils.forEach(otherKeys, mergeDeepProperties);\n  return config;\n};\n\n//# sourceURL=webpack:///./node_modules/axios/lib/core/mergeConfig.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/settle.js":
+/*!***********************************************!*\
+  !*** ./node_modules/axios/lib/core/settle.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nvar createError = __webpack_require__(/*! ./createError */ \"./node_modules/axios/lib/core/createError.js\");\n/**\n * Resolve or reject a Promise based on response status.\n *\n * @param {Function} resolve A function that resolves the promise.\n * @param {Function} reject A function that rejects the promise.\n * @param {object} response The response.\n */\n\n\nmodule.exports = function settle(resolve, reject, response) {\n  var validateStatus = response.config.validateStatus;\n\n  if (!response.status || !validateStatus || validateStatus(response.status)) {\n    resolve(response);\n  } else {\n    reject(createError('Request failed with status code ' + response.status, response.config, null, response.request, response));\n  }\n};\n\n//# sourceURL=webpack:///./node_modules/axios/lib/core/settle.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/transformData.js":
+/*!******************************************************!*\
+  !*** ./node_modules/axios/lib/core/transformData.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nvar utils = __webpack_require__(/*! ./../utils */ \"./node_modules/axios/lib/utils.js\");\n/**\n * Transform the data for a request or a response\n *\n * @param {Object|String} data The data to be transformed\n * @param {Array} headers The headers for the request or response\n * @param {Array|Function} fns A single function or Array of functions\n * @returns {*} The resulting transformed data\n */\n\n\nmodule.exports = function transformData(data, headers, fns) {\n  /*eslint no-param-reassign:0*/\n  utils.forEach(fns, function transform(fn) {\n    data = fn(data, headers);\n  });\n  return data;\n};\n\n//# sourceURL=webpack:///./node_modules/axios/lib/core/transformData.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/defaults.js":
+/*!********************************************!*\
+  !*** ./node_modules/axios/lib/defaults.js ***!
+  \********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("/* WEBPACK VAR INJECTION */(function(process) {\n\nvar utils = __webpack_require__(/*! ./utils */ \"./node_modules/axios/lib/utils.js\");\n\nvar normalizeHeaderName = __webpack_require__(/*! ./helpers/normalizeHeaderName */ \"./node_modules/axios/lib/helpers/normalizeHeaderName.js\");\n\nvar DEFAULT_CONTENT_TYPE = {\n  'Content-Type': 'application/x-www-form-urlencoded'\n};\n\nfunction setContentTypeIfUnset(headers, value) {\n  if (!utils.isUndefined(headers) && utils.isUndefined(headers['Content-Type'])) {\n    headers['Content-Type'] = value;\n  }\n}\n\nfunction getDefaultAdapter() {\n  var adapter;\n\n  if (typeof XMLHttpRequest !== 'undefined') {\n    // For browsers use XHR adapter\n    adapter = __webpack_require__(/*! ./adapters/xhr */ \"./node_modules/axios/lib/adapters/xhr.js\");\n  } else if (typeof process !== 'undefined' && Object.prototype.toString.call(process) === '[object process]') {\n    // For node use HTTP adapter\n    adapter = __webpack_require__(/*! ./adapters/http */ \"./node_modules/axios/lib/adapters/xhr.js\");\n  }\n\n  return adapter;\n}\n\nvar defaults = {\n  adapter: getDefaultAdapter(),\n  transformRequest: [function transformRequest(data, headers) {\n    normalizeHeaderName(headers, 'Accept');\n    normalizeHeaderName(headers, 'Content-Type');\n\n    if (utils.isFormData(data) || utils.isArrayBuffer(data) || utils.isBuffer(data) || utils.isStream(data) || utils.isFile(data) || utils.isBlob(data)) {\n      return data;\n    }\n\n    if (utils.isArrayBufferView(data)) {\n      return data.buffer;\n    }\n\n    if (utils.isURLSearchParams(data)) {\n      setContentTypeIfUnset(headers, 'application/x-www-form-urlencoded;charset=utf-8');\n      return data.toString();\n    }\n\n    if (utils.isObject(data)) {\n      setContentTypeIfUnset(headers, 'application/json;charset=utf-8');\n      return JSON.stringify(data);\n    }\n\n    return data;\n  }],\n  transformResponse: [function transformResponse(data) {\n    /*eslint no-param-reassign:0*/\n    if (typeof data === 'string') {\n      try {\n        data = JSON.parse(data);\n      } catch (e) {\n        /* Ignore */\n      }\n    }\n\n    return data;\n  }],\n\n  /**\n   * A timeout in milliseconds to abort a request. If set to 0 (default) a\n   * timeout is not created.\n   */\n  timeout: 0,\n  xsrfCookieName: 'XSRF-TOKEN',\n  xsrfHeaderName: 'X-XSRF-TOKEN',\n  maxContentLength: -1,\n  maxBodyLength: -1,\n  validateStatus: function validateStatus(status) {\n    return status >= 200 && status < 300;\n  }\n};\ndefaults.headers = {\n  common: {\n    'Accept': 'application/json, text/plain, */*'\n  }\n};\nutils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {\n  defaults.headers[method] = {};\n});\nutils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {\n  defaults.headers[method] = utils.merge(DEFAULT_CONTENT_TYPE);\n});\nmodule.exports = defaults;\n/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../process/browser.js */ \"./node_modules/process/browser.js\")))\n\n//# sourceURL=webpack:///./node_modules/axios/lib/defaults.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/bind.js":
+/*!************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/bind.js ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nmodule.exports = function bind(fn, thisArg) {\n  return function wrap() {\n    var args = new Array(arguments.length);\n\n    for (var i = 0; i < args.length; i++) {\n      args[i] = arguments[i];\n    }\n\n    return fn.apply(thisArg, args);\n  };\n};\n\n//# sourceURL=webpack:///./node_modules/axios/lib/helpers/bind.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/buildURL.js":
+/*!****************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/buildURL.js ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nvar utils = __webpack_require__(/*! ./../utils */ \"./node_modules/axios/lib/utils.js\");\n\nfunction encode(val) {\n  return encodeURIComponent(val).replace(/%3A/gi, ':').replace(/%24/g, '$').replace(/%2C/gi, ',').replace(/%20/g, '+').replace(/%5B/gi, '[').replace(/%5D/gi, ']');\n}\n/**\n * Build a URL by appending params to the end\n *\n * @param {string} url The base of the url (e.g., http://www.google.com)\n * @param {object} [params] The params to be appended\n * @returns {string} The formatted url\n */\n\n\nmodule.exports = function buildURL(url, params, paramsSerializer) {\n  /*eslint no-param-reassign:0*/\n  if (!params) {\n    return url;\n  }\n\n  var serializedParams;\n\n  if (paramsSerializer) {\n    serializedParams = paramsSerializer(params);\n  } else if (utils.isURLSearchParams(params)) {\n    serializedParams = params.toString();\n  } else {\n    var parts = [];\n    utils.forEach(params, function serialize(val, key) {\n      if (val === null || typeof val === 'undefined') {\n        return;\n      }\n\n      if (utils.isArray(val)) {\n        key = key + '[]';\n      } else {\n        val = [val];\n      }\n\n      utils.forEach(val, function parseValue(v) {\n        if (utils.isDate(v)) {\n          v = v.toISOString();\n        } else if (utils.isObject(v)) {\n          v = JSON.stringify(v);\n        }\n\n        parts.push(encode(key) + '=' + encode(v));\n      });\n    });\n    serializedParams = parts.join('&');\n  }\n\n  if (serializedParams) {\n    var hashmarkIndex = url.indexOf('#');\n\n    if (hashmarkIndex !== -1) {\n      url = url.slice(0, hashmarkIndex);\n    }\n\n    url += (url.indexOf('?') === -1 ? '?' : '&') + serializedParams;\n  }\n\n  return url;\n};\n\n//# sourceURL=webpack:///./node_modules/axios/lib/helpers/buildURL.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/combineURLs.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/combineURLs.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n/**\n * Creates a new URL by combining the specified URLs\n *\n * @param {string} baseURL The base URL\n * @param {string} relativeURL The relative URL\n * @returns {string} The combined URL\n */\n\nmodule.exports = function combineURLs(baseURL, relativeURL) {\n  return relativeURL ? baseURL.replace(/\\/+$/, '') + '/' + relativeURL.replace(/^\\/+/, '') : baseURL;\n};\n\n//# sourceURL=webpack:///./node_modules/axios/lib/helpers/combineURLs.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/cookies.js":
+/*!***************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/cookies.js ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nvar utils = __webpack_require__(/*! ./../utils */ \"./node_modules/axios/lib/utils.js\");\n\nmodule.exports = utils.isStandardBrowserEnv() ? // Standard browser envs support document.cookie\nfunction standardBrowserEnv() {\n  return {\n    write: function write(name, value, expires, path, domain, secure) {\n      var cookie = [];\n      cookie.push(name + '=' + encodeURIComponent(value));\n\n      if (utils.isNumber(expires)) {\n        cookie.push('expires=' + new Date(expires).toGMTString());\n      }\n\n      if (utils.isString(path)) {\n        cookie.push('path=' + path);\n      }\n\n      if (utils.isString(domain)) {\n        cookie.push('domain=' + domain);\n      }\n\n      if (secure === true) {\n        cookie.push('secure');\n      }\n\n      document.cookie = cookie.join('; ');\n    },\n    read: function read(name) {\n      var match = document.cookie.match(new RegExp('(^|;\\\\s*)(' + name + ')=([^;]*)'));\n      return match ? decodeURIComponent(match[3]) : null;\n    },\n    remove: function remove(name) {\n      this.write(name, '', Date.now() - 86400000);\n    }\n  };\n}() : // Non standard browser env (web workers, react-native) lack needed support.\nfunction nonStandardBrowserEnv() {\n  return {\n    write: function write() {},\n    read: function read() {\n      return null;\n    },\n    remove: function remove() {}\n  };\n}();\n\n//# sourceURL=webpack:///./node_modules/axios/lib/helpers/cookies.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/isAbsoluteURL.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/isAbsoluteURL.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n/**\n * Determines whether the specified URL is absolute\n *\n * @param {string} url The URL to test\n * @returns {boolean} True if the specified URL is absolute, otherwise false\n */\n\nmodule.exports = function isAbsoluteURL(url) {\n  // A URL is considered absolute if it begins with \"<scheme>://\" or \"//\" (protocol-relative URL).\n  // RFC 3986 defines scheme name as a sequence of characters beginning with a letter and followed\n  // by any combination of letters, digits, plus, period, or hyphen.\n  return /^([a-z][a-z\\d\\+\\-\\.]*:)?\\/\\//i.test(url);\n};\n\n//# sourceURL=webpack:///./node_modules/axios/lib/helpers/isAbsoluteURL.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/isURLSameOrigin.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/isURLSameOrigin.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nvar utils = __webpack_require__(/*! ./../utils */ \"./node_modules/axios/lib/utils.js\");\n\nmodule.exports = utils.isStandardBrowserEnv() ? // Standard browser envs have full support of the APIs needed to test\n// whether the request URL is of the same origin as current location.\nfunction standardBrowserEnv() {\n  var msie = /(msie|trident)/i.test(navigator.userAgent);\n  var urlParsingNode = document.createElement('a');\n  var originURL;\n  /**\n  * Parse a URL to discover it's components\n  *\n  * @param {String} url The URL to be parsed\n  * @returns {Object}\n  */\n\n  function resolveURL(url) {\n    var href = url;\n\n    if (msie) {\n      // IE needs attribute set twice to normalize properties\n      urlParsingNode.setAttribute('href', href);\n      href = urlParsingNode.href;\n    }\n\n    urlParsingNode.setAttribute('href', href); // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils\n\n    return {\n      href: urlParsingNode.href,\n      protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',\n      host: urlParsingNode.host,\n      search: urlParsingNode.search ? urlParsingNode.search.replace(/^\\?/, '') : '',\n      hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',\n      hostname: urlParsingNode.hostname,\n      port: urlParsingNode.port,\n      pathname: urlParsingNode.pathname.charAt(0) === '/' ? urlParsingNode.pathname : '/' + urlParsingNode.pathname\n    };\n  }\n\n  originURL = resolveURL(window.location.href);\n  /**\n  * Determine if a URL shares the same origin as the current location\n  *\n  * @param {String} requestURL The URL to test\n  * @returns {boolean} True if URL shares the same origin, otherwise false\n  */\n\n  return function isURLSameOrigin(requestURL) {\n    var parsed = utils.isString(requestURL) ? resolveURL(requestURL) : requestURL;\n    return parsed.protocol === originURL.protocol && parsed.host === originURL.host;\n  };\n}() : // Non standard browser envs (web workers, react-native) lack needed support.\nfunction nonStandardBrowserEnv() {\n  return function isURLSameOrigin() {\n    return true;\n  };\n}();\n\n//# sourceURL=webpack:///./node_modules/axios/lib/helpers/isURLSameOrigin.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/normalizeHeaderName.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/normalizeHeaderName.js ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nvar utils = __webpack_require__(/*! ../utils */ \"./node_modules/axios/lib/utils.js\");\n\nmodule.exports = function normalizeHeaderName(headers, normalizedName) {\n  utils.forEach(headers, function processHeader(value, name) {\n    if (name !== normalizedName && name.toUpperCase() === normalizedName.toUpperCase()) {\n      headers[normalizedName] = value;\n      delete headers[name];\n    }\n  });\n};\n\n//# sourceURL=webpack:///./node_modules/axios/lib/helpers/normalizeHeaderName.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/parseHeaders.js":
+/*!********************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/parseHeaders.js ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nvar utils = __webpack_require__(/*! ./../utils */ \"./node_modules/axios/lib/utils.js\"); // Headers whose duplicates are ignored by node\n// c.f. https://nodejs.org/api/http.html#http_message_headers\n\n\nvar ignoreDuplicateOf = ['age', 'authorization', 'content-length', 'content-type', 'etag', 'expires', 'from', 'host', 'if-modified-since', 'if-unmodified-since', 'last-modified', 'location', 'max-forwards', 'proxy-authorization', 'referer', 'retry-after', 'user-agent'];\n/**\n * Parse headers into an object\n *\n * ```\n * Date: Wed, 27 Aug 2014 08:58:49 GMT\n * Content-Type: application/json\n * Connection: keep-alive\n * Transfer-Encoding: chunked\n * ```\n *\n * @param {String} headers Headers needing to be parsed\n * @returns {Object} Headers parsed into an object\n */\n\nmodule.exports = function parseHeaders(headers) {\n  var parsed = {};\n  var key;\n  var val;\n  var i;\n\n  if (!headers) {\n    return parsed;\n  }\n\n  utils.forEach(headers.split('\\n'), function parser(line) {\n    i = line.indexOf(':');\n    key = utils.trim(line.substr(0, i)).toLowerCase();\n    val = utils.trim(line.substr(i + 1));\n\n    if (key) {\n      if (parsed[key] && ignoreDuplicateOf.indexOf(key) >= 0) {\n        return;\n      }\n\n      if (key === 'set-cookie') {\n        parsed[key] = (parsed[key] ? parsed[key] : []).concat([val]);\n      } else {\n        parsed[key] = parsed[key] ? parsed[key] + ', ' + val : val;\n      }\n    }\n  });\n  return parsed;\n};\n\n//# sourceURL=webpack:///./node_modules/axios/lib/helpers/parseHeaders.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/spread.js":
+/*!**************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/spread.js ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n/**\n * Syntactic sugar for invoking a function and expanding an array for arguments.\n *\n * Common use case would be to use `Function.prototype.apply`.\n *\n *  ```js\n *  function f(x, y, z) {}\n *  var args = [1, 2, 3];\n *  f.apply(null, args);\n *  ```\n *\n * With `spread` this example can be re-written.\n *\n *  ```js\n *  spread(function(x, y, z) {})([1, 2, 3]);\n *  ```\n *\n * @param {Function} callback\n * @returns {Function}\n */\n\nmodule.exports = function spread(callback) {\n  return function wrap(arr) {\n    return callback.apply(null, arr);\n  };\n};\n\n//# sourceURL=webpack:///./node_modules/axios/lib/helpers/spread.js?");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/utils.js":
+/*!*****************************************!*\
+  !*** ./node_modules/axios/lib/utils.js ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nvar bind = __webpack_require__(/*! ./helpers/bind */ \"./node_modules/axios/lib/helpers/bind.js\");\n/*global toString:true*/\n// utils is a library of generic helper functions non-specific to axios\n\n\nvar toString = Object.prototype.toString;\n/**\n * Determine if a value is an Array\n *\n * @param {Object} val The value to test\n * @returns {boolean} True if value is an Array, otherwise false\n */\n\nfunction isArray(val) {\n  return toString.call(val) === '[object Array]';\n}\n/**\n * Determine if a value is undefined\n *\n * @param {Object} val The value to test\n * @returns {boolean} True if the value is undefined, otherwise false\n */\n\n\nfunction isUndefined(val) {\n  return typeof val === 'undefined';\n}\n/**\n * Determine if a value is a Buffer\n *\n * @param {Object} val The value to test\n * @returns {boolean} True if value is a Buffer, otherwise false\n */\n\n\nfunction isBuffer(val) {\n  return val !== null && !isUndefined(val) && val.constructor !== null && !isUndefined(val.constructor) && typeof val.constructor.isBuffer === 'function' && val.constructor.isBuffer(val);\n}\n/**\n * Determine if a value is an ArrayBuffer\n *\n * @param {Object} val The value to test\n * @returns {boolean} True if value is an ArrayBuffer, otherwise false\n */\n\n\nfunction isArrayBuffer(val) {\n  return toString.call(val) === '[object ArrayBuffer]';\n}\n/**\n * Determine if a value is a FormData\n *\n * @param {Object} val The value to test\n * @returns {boolean} True if value is an FormData, otherwise false\n */\n\n\nfunction isFormData(val) {\n  return typeof FormData !== 'undefined' && val instanceof FormData;\n}\n/**\n * Determine if a value is a view on an ArrayBuffer\n *\n * @param {Object} val The value to test\n * @returns {boolean} True if value is a view on an ArrayBuffer, otherwise false\n */\n\n\nfunction isArrayBufferView(val) {\n  var result;\n\n  if (typeof ArrayBuffer !== 'undefined' && ArrayBuffer.isView) {\n    result = ArrayBuffer.isView(val);\n  } else {\n    result = val && val.buffer && val.buffer instanceof ArrayBuffer;\n  }\n\n  return result;\n}\n/**\n * Determine if a value is a String\n *\n * @param {Object} val The value to test\n * @returns {boolean} True if value is a String, otherwise false\n */\n\n\nfunction isString(val) {\n  return typeof val === 'string';\n}\n/**\n * Determine if a value is a Number\n *\n * @param {Object} val The value to test\n * @returns {boolean} True if value is a Number, otherwise false\n */\n\n\nfunction isNumber(val) {\n  return typeof val === 'number';\n}\n/**\n * Determine if a value is an Object\n *\n * @param {Object} val The value to test\n * @returns {boolean} True if value is an Object, otherwise false\n */\n\n\nfunction isObject(val) {\n  return val !== null && typeof val === 'object';\n}\n/**\n * Determine if a value is a plain Object\n *\n * @param {Object} val The value to test\n * @return {boolean} True if value is a plain Object, otherwise false\n */\n\n\nfunction isPlainObject(val) {\n  if (toString.call(val) !== '[object Object]') {\n    return false;\n  }\n\n  var prototype = Object.getPrototypeOf(val);\n  return prototype === null || prototype === Object.prototype;\n}\n/**\n * Determine if a value is a Date\n *\n * @param {Object} val The value to test\n * @returns {boolean} True if value is a Date, otherwise false\n */\n\n\nfunction isDate(val) {\n  return toString.call(val) === '[object Date]';\n}\n/**\n * Determine if a value is a File\n *\n * @param {Object} val The value to test\n * @returns {boolean} True if value is a File, otherwise false\n */\n\n\nfunction isFile(val) {\n  return toString.call(val) === '[object File]';\n}\n/**\n * Determine if a value is a Blob\n *\n * @param {Object} val The value to test\n * @returns {boolean} True if value is a Blob, otherwise false\n */\n\n\nfunction isBlob(val) {\n  return toString.call(val) === '[object Blob]';\n}\n/**\n * Determine if a value is a Function\n *\n * @param {Object} val The value to test\n * @returns {boolean} True if value is a Function, otherwise false\n */\n\n\nfunction isFunction(val) {\n  return toString.call(val) === '[object Function]';\n}\n/**\n * Determine if a value is a Stream\n *\n * @param {Object} val The value to test\n * @returns {boolean} True if value is a Stream, otherwise false\n */\n\n\nfunction isStream(val) {\n  return isObject(val) && isFunction(val.pipe);\n}\n/**\n * Determine if a value is a URLSearchParams object\n *\n * @param {Object} val The value to test\n * @returns {boolean} True if value is a URLSearchParams object, otherwise false\n */\n\n\nfunction isURLSearchParams(val) {\n  return typeof URLSearchParams !== 'undefined' && val instanceof URLSearchParams;\n}\n/**\n * Trim excess whitespace off the beginning and end of a string\n *\n * @param {String} str The String to trim\n * @returns {String} The String freed of excess whitespace\n */\n\n\nfunction trim(str) {\n  return str.replace(/^\\s*/, '').replace(/\\s*$/, '');\n}\n/**\n * Determine if we're running in a standard browser environment\n *\n * This allows axios to run in a web worker, and react-native.\n * Both environments support XMLHttpRequest, but not fully standard globals.\n *\n * web workers:\n *  typeof window -> undefined\n *  typeof document -> undefined\n *\n * react-native:\n *  navigator.product -> 'ReactNative'\n * nativescript\n *  navigator.product -> 'NativeScript' or 'NS'\n */\n\n\nfunction isStandardBrowserEnv() {\n  if (typeof navigator !== 'undefined' && (navigator.product === 'ReactNative' || navigator.product === 'NativeScript' || navigator.product === 'NS')) {\n    return false;\n  }\n\n  return typeof window !== 'undefined' && typeof document !== 'undefined';\n}\n/**\n * Iterate over an Array or an Object invoking a function for each item.\n *\n * If `obj` is an Array callback will be called passing\n * the value, index, and complete array for each item.\n *\n * If 'obj' is an Object callback will be called passing\n * the value, key, and complete object for each property.\n *\n * @param {Object|Array} obj The object to iterate\n * @param {Function} fn The callback to invoke for each item\n */\n\n\nfunction forEach(obj, fn) {\n  // Don't bother if no value provided\n  if (obj === null || typeof obj === 'undefined') {\n    return;\n  } // Force an array if not already something iterable\n\n\n  if (typeof obj !== 'object') {\n    /*eslint no-param-reassign:0*/\n    obj = [obj];\n  }\n\n  if (isArray(obj)) {\n    // Iterate over array values\n    for (var i = 0, l = obj.length; i < l; i++) {\n      fn.call(null, obj[i], i, obj);\n    }\n  } else {\n    // Iterate over object keys\n    for (var key in obj) {\n      if (Object.prototype.hasOwnProperty.call(obj, key)) {\n        fn.call(null, obj[key], key, obj);\n      }\n    }\n  }\n}\n/**\n * Accepts varargs expecting each argument to be an object, then\n * immutably merges the properties of each object and returns result.\n *\n * When multiple objects contain the same key the later object in\n * the arguments list will take precedence.\n *\n * Example:\n *\n * ```js\n * var result = merge({foo: 123}, {foo: 456});\n * console.log(result.foo); // outputs 456\n * ```\n *\n * @param {Object} obj1 Object to merge\n * @returns {Object} Result of all merge properties\n */\n\n\nfunction merge()\n/* obj1, obj2, obj3, ... */\n{\n  var result = {};\n\n  function assignValue(val, key) {\n    if (isPlainObject(result[key]) && isPlainObject(val)) {\n      result[key] = merge(result[key], val);\n    } else if (isPlainObject(val)) {\n      result[key] = merge({}, val);\n    } else if (isArray(val)) {\n      result[key] = val.slice();\n    } else {\n      result[key] = val;\n    }\n  }\n\n  for (var i = 0, l = arguments.length; i < l; i++) {\n    forEach(arguments[i], assignValue);\n  }\n\n  return result;\n}\n/**\n * Extends object a by mutably adding to it the properties of object b.\n *\n * @param {Object} a The object to be extended\n * @param {Object} b The object to copy properties from\n * @param {Object} thisArg The object to bind function to\n * @return {Object} The resulting value of object a\n */\n\n\nfunction extend(a, b, thisArg) {\n  forEach(b, function assignValue(val, key) {\n    if (thisArg && typeof val === 'function') {\n      a[key] = bind(val, thisArg);\n    } else {\n      a[key] = val;\n    }\n  });\n  return a;\n}\n/**\n * Remove byte order marker. This catches EF BB BF (the UTF-8 BOM)\n *\n * @param {string} content with BOM\n * @return {string} content value without BOM\n */\n\n\nfunction stripBOM(content) {\n  if (content.charCodeAt(0) === 0xFEFF) {\n    content = content.slice(1);\n  }\n\n  return content;\n}\n\nmodule.exports = {\n  isArray: isArray,\n  isArrayBuffer: isArrayBuffer,\n  isBuffer: isBuffer,\n  isFormData: isFormData,\n  isArrayBufferView: isArrayBufferView,\n  isString: isString,\n  isNumber: isNumber,\n  isObject: isObject,\n  isPlainObject: isPlainObject,\n  isUndefined: isUndefined,\n  isDate: isDate,\n  isFile: isFile,\n  isBlob: isBlob,\n  isFunction: isFunction,\n  isStream: isStream,\n  isURLSearchParams: isURLSearchParams,\n  isStandardBrowserEnv: isStandardBrowserEnv,\n  forEach: forEach,\n  merge: merge,\n  extend: extend,\n  trim: trim,\n  stripBOM: stripBOM\n};\n\n//# sourceURL=webpack:///./node_modules/axios/lib/utils.js?");
+
+/***/ }),
 
 /***/ "./node_modules/process/browser.js":
 /*!*****************************************!*\
@@ -829,17 +545,6 @@ eval("/* WEBPACK VAR INJECTION */(function(global) {var scope = typeof global !=
 
 /***/ }),
 
-/***/ "./node_modules/vue-hot-reload-api/dist/index.js":
-/*!*******************************************************!*\
-  !*** ./node_modules/vue-hot-reload-api/dist/index.js ***!
-  \*******************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-eval("var Vue; // late bind\n\nvar version;\nvar map = Object.create(null);\n\nif (typeof window !== 'undefined') {\n  window.__VUE_HOT_MAP__ = map;\n}\n\nvar installed = false;\nvar isBrowserify = false;\nvar initHookName = 'beforeCreate';\n\nexports.install = function (vue, browserify) {\n  if (installed) {\n    return;\n  }\n\n  installed = true;\n  Vue = vue.__esModule ? vue.default : vue;\n  version = Vue.version.split('.').map(Number);\n  isBrowserify = browserify; // compat with < 2.0.0-alpha.7\n\n  if (Vue.config._lifecycleHooks.indexOf('init') > -1) {\n    initHookName = 'init';\n  }\n\n  exports.compatible = version[0] >= 2;\n\n  if (!exports.compatible) {\n    console.warn('[HMR] You are using a version of vue-hot-reload-api that is ' + 'only compatible with Vue.js core ^2.0.0.');\n    return;\n  }\n};\n/**\n * Create a record for a hot module, which keeps track of its constructor\n * and instances\n *\n * @param {String} id\n * @param {Object} options\n */\n\n\nexports.createRecord = function (id, options) {\n  if (map[id]) {\n    return;\n  }\n\n  var Ctor = null;\n\n  if (typeof options === 'function') {\n    Ctor = options;\n    options = Ctor.options;\n  }\n\n  makeOptionsHot(id, options);\n  map[id] = {\n    Ctor: Ctor,\n    options: options,\n    instances: []\n  };\n};\n/**\n * Check if module is recorded\n *\n * @param {String} id\n */\n\n\nexports.isRecorded = function (id) {\n  return typeof map[id] !== 'undefined';\n};\n/**\n * Make a Component options object hot.\n *\n * @param {String} id\n * @param {Object} options\n */\n\n\nfunction makeOptionsHot(id, options) {\n  if (options.functional) {\n    var render = options.render;\n\n    options.render = function (h, ctx) {\n      var instances = map[id].instances;\n\n      if (ctx && instances.indexOf(ctx.parent) < 0) {\n        instances.push(ctx.parent);\n      }\n\n      return render(h, ctx);\n    };\n  } else {\n    injectHook(options, initHookName, function () {\n      var record = map[id];\n\n      if (!record.Ctor) {\n        record.Ctor = this.constructor;\n      }\n\n      record.instances.push(this);\n    });\n    injectHook(options, 'beforeDestroy', function () {\n      var instances = map[id].instances;\n      instances.splice(instances.indexOf(this), 1);\n    });\n  }\n}\n/**\n * Inject a hook to a hot reloadable component so that\n * we can keep track of it.\n *\n * @param {Object} options\n * @param {String} name\n * @param {Function} hook\n */\n\n\nfunction injectHook(options, name, hook) {\n  var existing = options[name];\n  options[name] = existing ? Array.isArray(existing) ? existing.concat(hook) : [existing, hook] : [hook];\n}\n\nfunction tryWrap(fn) {\n  return function (id, arg) {\n    try {\n      fn(id, arg);\n    } catch (e) {\n      console.error(e);\n      console.warn('Something went wrong during Vue component hot-reload. Full reload required.');\n    }\n  };\n}\n\nfunction updateOptions(oldOptions, newOptions) {\n  for (var key in oldOptions) {\n    if (!(key in newOptions)) {\n      delete oldOptions[key];\n    }\n  }\n\n  for (var key$1 in newOptions) {\n    oldOptions[key$1] = newOptions[key$1];\n  }\n}\n\nexports.rerender = tryWrap(function (id, options) {\n  var record = map[id];\n\n  if (!options) {\n    record.instances.slice().forEach(function (instance) {\n      instance.$forceUpdate();\n    });\n    return;\n  }\n\n  if (typeof options === 'function') {\n    options = options.options;\n  }\n\n  if (record.Ctor) {\n    record.Ctor.options.render = options.render;\n    record.Ctor.options.staticRenderFns = options.staticRenderFns;\n    record.instances.slice().forEach(function (instance) {\n      instance.$options.render = options.render;\n      instance.$options.staticRenderFns = options.staticRenderFns; // reset static trees\n      // pre 2.5, all static trees are cached together on the instance\n\n      if (instance._staticTrees) {\n        instance._staticTrees = [];\n      } // 2.5.0\n\n\n      if (Array.isArray(record.Ctor.options.cached)) {\n        record.Ctor.options.cached = [];\n      } // 2.5.3\n\n\n      if (Array.isArray(instance.$options.cached)) {\n        instance.$options.cached = [];\n      } // post 2.5.4: v-once trees are cached on instance._staticTrees.\n      // Pure static trees are cached on the staticRenderFns array\n      // (both already reset above)\n      // 2.6: temporarily mark rendered scoped slots as unstable so that\n      // child components can be forced to update\n\n\n      var restore = patchScopedSlots(instance);\n      instance.$forceUpdate();\n      instance.$nextTick(restore);\n    });\n  } else {\n    // functional or no instance created yet\n    record.options.render = options.render;\n    record.options.staticRenderFns = options.staticRenderFns; // handle functional component re-render\n\n    if (record.options.functional) {\n      // rerender with full options\n      if (Object.keys(options).length > 2) {\n        updateOptions(record.options, options);\n      } else {\n        // template-only rerender.\n        // need to inject the style injection code for CSS modules\n        // to work properly.\n        var injectStyles = record.options._injectStyles;\n\n        if (injectStyles) {\n          var render = options.render;\n\n          record.options.render = function (h, ctx) {\n            injectStyles.call(ctx);\n            return render(h, ctx);\n          };\n        }\n      }\n\n      record.options._Ctor = null; // 2.5.3\n\n      if (Array.isArray(record.options.cached)) {\n        record.options.cached = [];\n      }\n\n      record.instances.slice().forEach(function (instance) {\n        instance.$forceUpdate();\n      });\n    }\n  }\n});\nexports.reload = tryWrap(function (id, options) {\n  var record = map[id];\n\n  if (options) {\n    if (typeof options === 'function') {\n      options = options.options;\n    }\n\n    makeOptionsHot(id, options);\n\n    if (record.Ctor) {\n      if (version[1] < 2) {\n        // preserve pre 2.2 behavior for global mixin handling\n        record.Ctor.extendOptions = options;\n      }\n\n      var newCtor = record.Ctor.super.extend(options); // prevent record.options._Ctor from being overwritten accidentally\n\n      newCtor.options._Ctor = record.options._Ctor;\n      record.Ctor.options = newCtor.options;\n      record.Ctor.cid = newCtor.cid;\n      record.Ctor.prototype = newCtor.prototype;\n\n      if (newCtor.release) {\n        // temporary global mixin strategy used in < 2.0.0-alpha.6\n        newCtor.release();\n      }\n    } else {\n      updateOptions(record.options, options);\n    }\n  }\n\n  record.instances.slice().forEach(function (instance) {\n    if (instance.$vnode && instance.$vnode.context) {\n      instance.$vnode.context.$forceUpdate();\n    } else {\n      console.warn('Root or manually mounted instance modified. Full reload required.');\n    }\n  });\n}); // 2.6 optimizes template-compiled scoped slots and skips updates if child\n// only uses scoped slots. We need to patch the scoped slots resolving helper\n// to temporarily mark all scoped slots as unstable in order to force child\n// updates.\n\nfunction patchScopedSlots(instance) {\n  if (!instance._u) {\n    return;\n  } // https://github.com/vuejs/vue/blob/dev/src/core/instance/render-helpers/resolve-scoped-slots.js\n\n\n  var original = instance._u;\n\n  instance._u = function (slots) {\n    try {\n      // 2.6.4 ~ 2.6.6\n      return original(slots, true);\n    } catch (e) {\n      // 2.5 / >= 2.6.7\n      return original(slots, null, true);\n    }\n  };\n\n  return function () {\n    instance._u = original;\n  };\n}\n\n//# sourceURL=webpack:///./node_modules/vue-hot-reload-api/dist/index.js?");
-
-/***/ }),
-
 /***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./src/app.vue?vue&type=template&id=5ef48958&":
 /*!**********************************************************************************************************************************************************************************!*\
   !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./src/app.vue?vue&type=template&id=5ef48958& ***!
@@ -848,7 +553,7 @@ eval("var Vue; // late bind\n\nvar version;\nvar map = Object.create(null);\n\ni
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"render\", function() { return render; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"staticRenderFns\", function() { return staticRenderFns; });\nvar render = function() {\n  var _vm = this\n  var _h = _vm.$createElement\n  var _c = _vm._self._c || _h\n  return _c(\"div\", { attrs: { id: \"app\" } }, [_vm._v(\"Hello Vuess\")])\n}\nvar staticRenderFns = []\nrender._withStripped = true\n\n\n\n//# sourceURL=webpack:///./src/app.vue?./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"render\", function() { return render; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"staticRenderFns\", function() { return staticRenderFns; });\nvar render = function() {\n  var _vm = this\n  var _h = _vm.$createElement\n  var _c = _vm._self._c || _h\n  return _c(\"div\", { attrs: { id: \"app\" } }, [_c(\"router-view\")], 1)\n}\nvar staticRenderFns = []\nrender._withStripped = true\n\n\n\n//# sourceURL=webpack:///./src/app.vue?./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options");
 
 /***/ }),
 
@@ -861,6 +566,18 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) *
 
 "use strict";
 eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return normalizeComponent; });\n/* globals __VUE_SSR_CONTEXT__ */\n\n// IMPORTANT: Do NOT use ES2015 features in this file (except for modules).\n// This module is a runtime utility for cleaner component module output and will\n// be included in the final webpack user bundle.\n\nfunction normalizeComponent (\n  scriptExports,\n  render,\n  staticRenderFns,\n  functionalTemplate,\n  injectStyles,\n  scopeId,\n  moduleIdentifier, /* server only */\n  shadowMode /* vue-cli only */\n) {\n  // Vue.extend constructor export interop\n  var options = typeof scriptExports === 'function'\n    ? scriptExports.options\n    : scriptExports\n\n  // render functions\n  if (render) {\n    options.render = render\n    options.staticRenderFns = staticRenderFns\n    options._compiled = true\n  }\n\n  // functional template\n  if (functionalTemplate) {\n    options.functional = true\n  }\n\n  // scopedId\n  if (scopeId) {\n    options._scopeId = 'data-v-' + scopeId\n  }\n\n  var hook\n  if (moduleIdentifier) { // server build\n    hook = function (context) {\n      // 2.3 injection\n      context =\n        context || // cached call\n        (this.$vnode && this.$vnode.ssrContext) || // stateful\n        (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext) // functional\n      // 2.2 with runInNewContext: true\n      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {\n        context = __VUE_SSR_CONTEXT__\n      }\n      // inject component styles\n      if (injectStyles) {\n        injectStyles.call(this, context)\n      }\n      // register component module identifier for async chunk inferrence\n      if (context && context._registeredComponents) {\n        context._registeredComponents.add(moduleIdentifier)\n      }\n    }\n    // used by ssr in case component is cached and beforeCreate\n    // never gets called\n    options._ssrRegister = hook\n  } else if (injectStyles) {\n    hook = shadowMode\n      ? function () {\n        injectStyles.call(\n          this,\n          (options.functional ? this.parent : this).$root.$options.shadowRoot\n        )\n      }\n      : injectStyles\n  }\n\n  if (hook) {\n    if (options.functional) {\n      // for template-only hot-reload because in that case the render fn doesn't\n      // go through the normalizer\n      options._injectStyles = hook\n      // register for functional component in vue file\n      var originalRender = options.render\n      options.render = function renderWithStyleInjection (h, context) {\n        hook.call(context)\n        return originalRender(h, context)\n      }\n    } else {\n      // inject component registration as beforeCreate hook\n      var existing = options.beforeCreate\n      options.beforeCreate = existing\n        ? [].concat(existing, hook)\n        : [hook]\n    }\n  }\n\n  return {\n    exports: scriptExports,\n    options: options\n  }\n}\n\n\n//# sourceURL=webpack:///./node_modules/vue-loader/lib/runtime/componentNormalizer.js?");
+
+/***/ }),
+
+/***/ "./node_modules/vue-router/dist/vue-router.esm.js":
+/*!********************************************************!*\
+  !*** ./node_modules/vue-router/dist/vue-router.esm.js ***!
+  \********************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/*!\n  * vue-router v3.4.6\n  * (c) 2020 Evan You\n  * @license MIT\n  */\n\n/*  */\nfunction assert(condition, message) {\n  if (!condition) {\n    throw new Error(\"[vue-router] \" + message);\n  }\n}\n\nfunction warn(condition, message) {\n  if ( true && !condition) {\n    typeof console !== 'undefined' && console.warn(\"[vue-router] \" + message);\n  }\n}\n\nfunction extend(a, b) {\n  for (var key in b) {\n    a[key] = b[key];\n  }\n\n  return a;\n}\n/*  */\n\n\nvar encodeReserveRE = /[!'()*]/g;\n\nvar encodeReserveReplacer = function (c) {\n  return '%' + c.charCodeAt(0).toString(16);\n};\n\nvar commaRE = /%2C/g; // fixed encodeURIComponent which is more conformant to RFC3986:\n// - escapes [!'()*]\n// - preserve commas\n\nvar encode = function (str) {\n  return encodeURIComponent(str).replace(encodeReserveRE, encodeReserveReplacer).replace(commaRE, ',');\n};\n\nfunction decode(str) {\n  try {\n    return decodeURIComponent(str);\n  } catch (err) {\n    if (true) {\n      warn(false, \"Error decoding \\\"\" + str + \"\\\". Leaving it intact.\");\n    }\n  }\n\n  return str;\n}\n\nfunction resolveQuery(query, extraQuery, _parseQuery) {\n  if (extraQuery === void 0) extraQuery = {};\n  var parse = _parseQuery || parseQuery;\n  var parsedQuery;\n\n  try {\n    parsedQuery = parse(query || '');\n  } catch (e) {\n     true && warn(false, e.message);\n    parsedQuery = {};\n  }\n\n  for (var key in extraQuery) {\n    var value = extraQuery[key];\n    parsedQuery[key] = Array.isArray(value) ? value.map(castQueryParamValue) : castQueryParamValue(value);\n  }\n\n  return parsedQuery;\n}\n\nvar castQueryParamValue = function (value) {\n  return value == null || typeof value === 'object' ? value : String(value);\n};\n\nfunction parseQuery(query) {\n  var res = {};\n  query = query.trim().replace(/^(\\?|#|&)/, '');\n\n  if (!query) {\n    return res;\n  }\n\n  query.split('&').forEach(function (param) {\n    var parts = param.replace(/\\+/g, ' ').split('=');\n    var key = decode(parts.shift());\n    var val = parts.length > 0 ? decode(parts.join('=')) : null;\n\n    if (res[key] === undefined) {\n      res[key] = val;\n    } else if (Array.isArray(res[key])) {\n      res[key].push(val);\n    } else {\n      res[key] = [res[key], val];\n    }\n  });\n  return res;\n}\n\nfunction stringifyQuery(obj) {\n  var res = obj ? Object.keys(obj).map(function (key) {\n    var val = obj[key];\n\n    if (val === undefined) {\n      return '';\n    }\n\n    if (val === null) {\n      return encode(key);\n    }\n\n    if (Array.isArray(val)) {\n      var result = [];\n      val.forEach(function (val2) {\n        if (val2 === undefined) {\n          return;\n        }\n\n        if (val2 === null) {\n          result.push(encode(key));\n        } else {\n          result.push(encode(key) + '=' + encode(val2));\n        }\n      });\n      return result.join('&');\n    }\n\n    return encode(key) + '=' + encode(val);\n  }).filter(function (x) {\n    return x.length > 0;\n  }).join('&') : null;\n  return res ? \"?\" + res : '';\n}\n/*  */\n\n\nvar trailingSlashRE = /\\/?$/;\n\nfunction createRoute(record, location, redirectedFrom, router) {\n  var stringifyQuery = router && router.options.stringifyQuery;\n  var query = location.query || {};\n\n  try {\n    query = clone(query);\n  } catch (e) {}\n\n  var route = {\n    name: location.name || record && record.name,\n    meta: record && record.meta || {},\n    path: location.path || '/',\n    hash: location.hash || '',\n    query: query,\n    params: location.params || {},\n    fullPath: getFullPath(location, stringifyQuery),\n    matched: record ? formatMatch(record) : []\n  };\n\n  if (redirectedFrom) {\n    route.redirectedFrom = getFullPath(redirectedFrom, stringifyQuery);\n  }\n\n  return Object.freeze(route);\n}\n\nfunction clone(value) {\n  if (Array.isArray(value)) {\n    return value.map(clone);\n  } else if (value && typeof value === 'object') {\n    var res = {};\n\n    for (var key in value) {\n      res[key] = clone(value[key]);\n    }\n\n    return res;\n  } else {\n    return value;\n  }\n} // the starting route that represents the initial state\n\n\nvar START = createRoute(null, {\n  path: '/'\n});\n\nfunction formatMatch(record) {\n  var res = [];\n\n  while (record) {\n    res.unshift(record);\n    record = record.parent;\n  }\n\n  return res;\n}\n\nfunction getFullPath(ref, _stringifyQuery) {\n  var path = ref.path;\n  var query = ref.query;\n  if (query === void 0) query = {};\n  var hash = ref.hash;\n  if (hash === void 0) hash = '';\n  var stringify = _stringifyQuery || stringifyQuery;\n  return (path || '/') + stringify(query) + hash;\n}\n\nfunction isSameRoute(a, b) {\n  if (b === START) {\n    return a === b;\n  } else if (!b) {\n    return false;\n  } else if (a.path && b.path) {\n    return a.path.replace(trailingSlashRE, '') === b.path.replace(trailingSlashRE, '') && a.hash === b.hash && isObjectEqual(a.query, b.query);\n  } else if (a.name && b.name) {\n    return a.name === b.name && a.hash === b.hash && isObjectEqual(a.query, b.query) && isObjectEqual(a.params, b.params);\n  } else {\n    return false;\n  }\n}\n\nfunction isObjectEqual(a, b) {\n  if (a === void 0) a = {};\n  if (b === void 0) b = {}; // handle null value #1566\n\n  if (!a || !b) {\n    return a === b;\n  }\n\n  var aKeys = Object.keys(a);\n  var bKeys = Object.keys(b);\n\n  if (aKeys.length !== bKeys.length) {\n    return false;\n  }\n\n  return aKeys.every(function (key) {\n    var aVal = a[key];\n    var bVal = b[key]; // query values can be null and undefined\n\n    if (aVal == null || bVal == null) {\n      return aVal === bVal;\n    } // check nested equality\n\n\n    if (typeof aVal === 'object' && typeof bVal === 'object') {\n      return isObjectEqual(aVal, bVal);\n    }\n\n    return String(aVal) === String(bVal);\n  });\n}\n\nfunction isIncludedRoute(current, target) {\n  return current.path.replace(trailingSlashRE, '/').indexOf(target.path.replace(trailingSlashRE, '/')) === 0 && (!target.hash || current.hash === target.hash) && queryIncludes(current.query, target.query);\n}\n\nfunction queryIncludes(current, target) {\n  for (var key in target) {\n    if (!(key in current)) {\n      return false;\n    }\n  }\n\n  return true;\n}\n\nfunction handleRouteEntered(route) {\n  for (var i = 0; i < route.matched.length; i++) {\n    var record = route.matched[i];\n\n    for (var name in record.instances) {\n      var instance = record.instances[name];\n      var cbs = record.enteredCbs[name];\n\n      if (!instance || !cbs) {\n        continue;\n      }\n\n      delete record.enteredCbs[name];\n\n      for (var i$1 = 0; i$1 < cbs.length; i$1++) {\n        if (!instance._isBeingDestroyed) {\n          cbs[i$1](instance);\n        }\n      }\n    }\n  }\n}\n\nvar View = {\n  name: 'RouterView',\n  functional: true,\n  props: {\n    name: {\n      type: String,\n      default: 'default'\n    }\n  },\n  render: function render(_, ref) {\n    var props = ref.props;\n    var children = ref.children;\n    var parent = ref.parent;\n    var data = ref.data; // used by devtools to display a router-view badge\n\n    data.routerView = true; // directly use parent context's createElement() function\n    // so that components rendered by router-view can resolve named slots\n\n    var h = parent.$createElement;\n    var name = props.name;\n    var route = parent.$route;\n    var cache = parent._routerViewCache || (parent._routerViewCache = {}); // determine current view depth, also check to see if the tree\n    // has been toggled inactive but kept-alive.\n\n    var depth = 0;\n    var inactive = false;\n\n    while (parent && parent._routerRoot !== parent) {\n      var vnodeData = parent.$vnode ? parent.$vnode.data : {};\n\n      if (vnodeData.routerView) {\n        depth++;\n      }\n\n      if (vnodeData.keepAlive && parent._directInactive && parent._inactive) {\n        inactive = true;\n      }\n\n      parent = parent.$parent;\n    }\n\n    data.routerViewDepth = depth; // render previous view if the tree is inactive and kept-alive\n\n    if (inactive) {\n      var cachedData = cache[name];\n      var cachedComponent = cachedData && cachedData.component;\n\n      if (cachedComponent) {\n        // #2301\n        // pass props\n        if (cachedData.configProps) {\n          fillPropsinData(cachedComponent, data, cachedData.route, cachedData.configProps);\n        }\n\n        return h(cachedComponent, data, children);\n      } else {\n        // render previous empty view\n        return h();\n      }\n    }\n\n    var matched = route.matched[depth];\n    var component = matched && matched.components[name]; // render empty node if no matched route or no config component\n\n    if (!matched || !component) {\n      cache[name] = null;\n      return h();\n    } // cache component\n\n\n    cache[name] = {\n      component: component\n    }; // attach instance registration hook\n    // this will be called in the instance's injected lifecycle hooks\n\n    data.registerRouteInstance = function (vm, val) {\n      // val could be undefined for unregistration\n      var current = matched.instances[name];\n\n      if (val && current !== vm || !val && current === vm) {\n        matched.instances[name] = val;\n      }\n    } // also register instance in prepatch hook\n    // in case the same component instance is reused across different routes\n    ;\n\n    (data.hook || (data.hook = {})).prepatch = function (_, vnode) {\n      matched.instances[name] = vnode.componentInstance;\n    }; // register instance in init hook\n    // in case kept-alive component be actived when routes changed\n\n\n    data.hook.init = function (vnode) {\n      if (vnode.data.keepAlive && vnode.componentInstance && vnode.componentInstance !== matched.instances[name]) {\n        matched.instances[name] = vnode.componentInstance;\n      } // if the route transition has already been confirmed then we weren't\n      // able to call the cbs during confirmation as the component was not\n      // registered yet, so we call it here.\n\n\n      handleRouteEntered(route);\n    };\n\n    var configProps = matched.props && matched.props[name]; // save route and configProps in cache\n\n    if (configProps) {\n      extend(cache[name], {\n        route: route,\n        configProps: configProps\n      });\n      fillPropsinData(component, data, route, configProps);\n    }\n\n    return h(component, data, children);\n  }\n};\n\nfunction fillPropsinData(component, data, route, configProps) {\n  // resolve props\n  var propsToPass = data.props = resolveProps(route, configProps);\n\n  if (propsToPass) {\n    // clone to prevent mutation\n    propsToPass = data.props = extend({}, propsToPass); // pass non-declared props as attrs\n\n    var attrs = data.attrs = data.attrs || {};\n\n    for (var key in propsToPass) {\n      if (!component.props || !(key in component.props)) {\n        attrs[key] = propsToPass[key];\n        delete propsToPass[key];\n      }\n    }\n  }\n}\n\nfunction resolveProps(route, config) {\n  switch (typeof config) {\n    case 'undefined':\n      return;\n\n    case 'object':\n      return config;\n\n    case 'function':\n      return config(route);\n\n    case 'boolean':\n      return config ? route.params : undefined;\n\n    default:\n      if (true) {\n        warn(false, \"props in \\\"\" + route.path + \"\\\" is a \" + typeof config + \", \" + \"expecting an object, function or boolean.\");\n      }\n\n  }\n}\n/*  */\n\n\nfunction resolvePath(relative, base, append) {\n  var firstChar = relative.charAt(0);\n\n  if (firstChar === '/') {\n    return relative;\n  }\n\n  if (firstChar === '?' || firstChar === '#') {\n    return base + relative;\n  }\n\n  var stack = base.split('/'); // remove trailing segment if:\n  // - not appending\n  // - appending to trailing slash (last segment is empty)\n\n  if (!append || !stack[stack.length - 1]) {\n    stack.pop();\n  } // resolve relative path\n\n\n  var segments = relative.replace(/^\\//, '').split('/');\n\n  for (var i = 0; i < segments.length; i++) {\n    var segment = segments[i];\n\n    if (segment === '..') {\n      stack.pop();\n    } else if (segment !== '.') {\n      stack.push(segment);\n    }\n  } // ensure leading slash\n\n\n  if (stack[0] !== '') {\n    stack.unshift('');\n  }\n\n  return stack.join('/');\n}\n\nfunction parsePath(path) {\n  var hash = '';\n  var query = '';\n  var hashIndex = path.indexOf('#');\n\n  if (hashIndex >= 0) {\n    hash = path.slice(hashIndex);\n    path = path.slice(0, hashIndex);\n  }\n\n  var queryIndex = path.indexOf('?');\n\n  if (queryIndex >= 0) {\n    query = path.slice(queryIndex + 1);\n    path = path.slice(0, queryIndex);\n  }\n\n  return {\n    path: path,\n    query: query,\n    hash: hash\n  };\n}\n\nfunction cleanPath(path) {\n  return path.replace(/\\/\\//g, '/');\n}\n\nvar isarray = Array.isArray || function (arr) {\n  return Object.prototype.toString.call(arr) == '[object Array]';\n};\n/**\n * Expose `pathToRegexp`.\n */\n\n\nvar pathToRegexp_1 = pathToRegexp;\nvar parse_1 = parse;\nvar compile_1 = compile;\nvar tokensToFunction_1 = tokensToFunction;\nvar tokensToRegExp_1 = tokensToRegExp;\n/**\n * The main path matching regexp utility.\n *\n * @type {RegExp}\n */\n\nvar PATH_REGEXP = new RegExp([// Match escaped characters that would otherwise appear in future matches.\n// This allows the user to escape special characters that won't transform.\n'(\\\\\\\\.)', // Match Express-style parameters and un-named parameters with a prefix\n// and optional suffixes. Matches appear as:\n//\n// \"/:test(\\\\d+)?\" => [\"/\", \"test\", \"\\d+\", undefined, \"?\", undefined]\n// \"/route(\\\\d+)\"  => [undefined, undefined, undefined, \"\\d+\", undefined, undefined]\n// \"/*\"            => [\"/\", undefined, undefined, undefined, undefined, \"*\"]\n'([\\\\/.])?(?:(?:\\\\:(\\\\w+)(?:\\\\(((?:\\\\\\\\.|[^\\\\\\\\()])+)\\\\))?|\\\\(((?:\\\\\\\\.|[^\\\\\\\\()])+)\\\\))([+*?])?|(\\\\*))'].join('|'), 'g');\n/**\n * Parse a string for the raw tokens.\n *\n * @param  {string}  str\n * @param  {Object=} options\n * @return {!Array}\n */\n\nfunction parse(str, options) {\n  var tokens = [];\n  var key = 0;\n  var index = 0;\n  var path = '';\n  var defaultDelimiter = options && options.delimiter || '/';\n  var res;\n\n  while ((res = PATH_REGEXP.exec(str)) != null) {\n    var m = res[0];\n    var escaped = res[1];\n    var offset = res.index;\n    path += str.slice(index, offset);\n    index = offset + m.length; // Ignore already escaped sequences.\n\n    if (escaped) {\n      path += escaped[1];\n      continue;\n    }\n\n    var next = str[index];\n    var prefix = res[2];\n    var name = res[3];\n    var capture = res[4];\n    var group = res[5];\n    var modifier = res[6];\n    var asterisk = res[7]; // Push the current path onto the tokens.\n\n    if (path) {\n      tokens.push(path);\n      path = '';\n    }\n\n    var partial = prefix != null && next != null && next !== prefix;\n    var repeat = modifier === '+' || modifier === '*';\n    var optional = modifier === '?' || modifier === '*';\n    var delimiter = res[2] || defaultDelimiter;\n    var pattern = capture || group;\n    tokens.push({\n      name: name || key++,\n      prefix: prefix || '',\n      delimiter: delimiter,\n      optional: optional,\n      repeat: repeat,\n      partial: partial,\n      asterisk: !!asterisk,\n      pattern: pattern ? escapeGroup(pattern) : asterisk ? '.*' : '[^' + escapeString(delimiter) + ']+?'\n    });\n  } // Match any characters still remaining.\n\n\n  if (index < str.length) {\n    path += str.substr(index);\n  } // If the path exists, push it onto the end.\n\n\n  if (path) {\n    tokens.push(path);\n  }\n\n  return tokens;\n}\n/**\n * Compile a string to a template function for the path.\n *\n * @param  {string}             str\n * @param  {Object=}            options\n * @return {!function(Object=, Object=)}\n */\n\n\nfunction compile(str, options) {\n  return tokensToFunction(parse(str, options), options);\n}\n/**\n * Prettier encoding of URI path segments.\n *\n * @param  {string}\n * @return {string}\n */\n\n\nfunction encodeURIComponentPretty(str) {\n  return encodeURI(str).replace(/[\\/?#]/g, function (c) {\n    return '%' + c.charCodeAt(0).toString(16).toUpperCase();\n  });\n}\n/**\n * Encode the asterisk parameter. Similar to `pretty`, but allows slashes.\n *\n * @param  {string}\n * @return {string}\n */\n\n\nfunction encodeAsterisk(str) {\n  return encodeURI(str).replace(/[?#]/g, function (c) {\n    return '%' + c.charCodeAt(0).toString(16).toUpperCase();\n  });\n}\n/**\n * Expose a method for transforming tokens into the path function.\n */\n\n\nfunction tokensToFunction(tokens, options) {\n  // Compile all the tokens into regexps.\n  var matches = new Array(tokens.length); // Compile all the patterns before compilation.\n\n  for (var i = 0; i < tokens.length; i++) {\n    if (typeof tokens[i] === 'object') {\n      matches[i] = new RegExp('^(?:' + tokens[i].pattern + ')$', flags(options));\n    }\n  }\n\n  return function (obj, opts) {\n    var path = '';\n    var data = obj || {};\n    var options = opts || {};\n    var encode = options.pretty ? encodeURIComponentPretty : encodeURIComponent;\n\n    for (var i = 0; i < tokens.length; i++) {\n      var token = tokens[i];\n\n      if (typeof token === 'string') {\n        path += token;\n        continue;\n      }\n\n      var value = data[token.name];\n      var segment;\n\n      if (value == null) {\n        if (token.optional) {\n          // Prepend partial segment prefixes.\n          if (token.partial) {\n            path += token.prefix;\n          }\n\n          continue;\n        } else {\n          throw new TypeError('Expected \"' + token.name + '\" to be defined');\n        }\n      }\n\n      if (isarray(value)) {\n        if (!token.repeat) {\n          throw new TypeError('Expected \"' + token.name + '\" to not repeat, but received `' + JSON.stringify(value) + '`');\n        }\n\n        if (value.length === 0) {\n          if (token.optional) {\n            continue;\n          } else {\n            throw new TypeError('Expected \"' + token.name + '\" to not be empty');\n          }\n        }\n\n        for (var j = 0; j < value.length; j++) {\n          segment = encode(value[j]);\n\n          if (!matches[i].test(segment)) {\n            throw new TypeError('Expected all \"' + token.name + '\" to match \"' + token.pattern + '\", but received `' + JSON.stringify(segment) + '`');\n          }\n\n          path += (j === 0 ? token.prefix : token.delimiter) + segment;\n        }\n\n        continue;\n      }\n\n      segment = token.asterisk ? encodeAsterisk(value) : encode(value);\n\n      if (!matches[i].test(segment)) {\n        throw new TypeError('Expected \"' + token.name + '\" to match \"' + token.pattern + '\", but received \"' + segment + '\"');\n      }\n\n      path += token.prefix + segment;\n    }\n\n    return path;\n  };\n}\n/**\n * Escape a regular expression string.\n *\n * @param  {string} str\n * @return {string}\n */\n\n\nfunction escapeString(str) {\n  return str.replace(/([.+*?=^!:${}()[\\]|\\/\\\\])/g, '\\\\$1');\n}\n/**\n * Escape the capturing group by escaping special characters and meaning.\n *\n * @param  {string} group\n * @return {string}\n */\n\n\nfunction escapeGroup(group) {\n  return group.replace(/([=!:$\\/()])/g, '\\\\$1');\n}\n/**\n * Attach the keys as a property of the regexp.\n *\n * @param  {!RegExp} re\n * @param  {Array}   keys\n * @return {!RegExp}\n */\n\n\nfunction attachKeys(re, keys) {\n  re.keys = keys;\n  return re;\n}\n/**\n * Get the flags for a regexp from the options.\n *\n * @param  {Object} options\n * @return {string}\n */\n\n\nfunction flags(options) {\n  return options && options.sensitive ? '' : 'i';\n}\n/**\n * Pull out keys from a regexp.\n *\n * @param  {!RegExp} path\n * @param  {!Array}  keys\n * @return {!RegExp}\n */\n\n\nfunction regexpToRegexp(path, keys) {\n  // Use a negative lookahead to match only capturing groups.\n  var groups = path.source.match(/\\((?!\\?)/g);\n\n  if (groups) {\n    for (var i = 0; i < groups.length; i++) {\n      keys.push({\n        name: i,\n        prefix: null,\n        delimiter: null,\n        optional: false,\n        repeat: false,\n        partial: false,\n        asterisk: false,\n        pattern: null\n      });\n    }\n  }\n\n  return attachKeys(path, keys);\n}\n/**\n * Transform an array into a regexp.\n *\n * @param  {!Array}  path\n * @param  {Array}   keys\n * @param  {!Object} options\n * @return {!RegExp}\n */\n\n\nfunction arrayToRegexp(path, keys, options) {\n  var parts = [];\n\n  for (var i = 0; i < path.length; i++) {\n    parts.push(pathToRegexp(path[i], keys, options).source);\n  }\n\n  var regexp = new RegExp('(?:' + parts.join('|') + ')', flags(options));\n  return attachKeys(regexp, keys);\n}\n/**\n * Create a path regexp from string input.\n *\n * @param  {string}  path\n * @param  {!Array}  keys\n * @param  {!Object} options\n * @return {!RegExp}\n */\n\n\nfunction stringToRegexp(path, keys, options) {\n  return tokensToRegExp(parse(path, options), keys, options);\n}\n/**\n * Expose a function for taking tokens and returning a RegExp.\n *\n * @param  {!Array}          tokens\n * @param  {(Array|Object)=} keys\n * @param  {Object=}         options\n * @return {!RegExp}\n */\n\n\nfunction tokensToRegExp(tokens, keys, options) {\n  if (!isarray(keys)) {\n    options =\n    /** @type {!Object} */\n    keys || options;\n    keys = [];\n  }\n\n  options = options || {};\n  var strict = options.strict;\n  var end = options.end !== false;\n  var route = ''; // Iterate over the tokens and create our regexp string.\n\n  for (var i = 0; i < tokens.length; i++) {\n    var token = tokens[i];\n\n    if (typeof token === 'string') {\n      route += escapeString(token);\n    } else {\n      var prefix = escapeString(token.prefix);\n      var capture = '(?:' + token.pattern + ')';\n      keys.push(token);\n\n      if (token.repeat) {\n        capture += '(?:' + prefix + capture + ')*';\n      }\n\n      if (token.optional) {\n        if (!token.partial) {\n          capture = '(?:' + prefix + '(' + capture + '))?';\n        } else {\n          capture = prefix + '(' + capture + ')?';\n        }\n      } else {\n        capture = prefix + '(' + capture + ')';\n      }\n\n      route += capture;\n    }\n  }\n\n  var delimiter = escapeString(options.delimiter || '/');\n  var endsWithDelimiter = route.slice(-delimiter.length) === delimiter; // In non-strict mode we allow a slash at the end of match. If the path to\n  // match already ends with a slash, we remove it for consistency. The slash\n  // is valid at the end of a path match, not in the middle. This is important\n  // in non-ending mode, where \"/test/\" shouldn't match \"/test//route\".\n\n  if (!strict) {\n    route = (endsWithDelimiter ? route.slice(0, -delimiter.length) : route) + '(?:' + delimiter + '(?=$))?';\n  }\n\n  if (end) {\n    route += '$';\n  } else {\n    // In non-ending mode, we need the capturing groups to match as much as\n    // possible by using a positive lookahead to the end or next path segment.\n    route += strict && endsWithDelimiter ? '' : '(?=' + delimiter + '|$)';\n  }\n\n  return attachKeys(new RegExp('^' + route, flags(options)), keys);\n}\n/**\n * Normalize the given path string, returning a regular expression.\n *\n * An empty array can be passed in for the keys, which will hold the\n * placeholder key descriptions. For example, using `/user/:id`, `keys` will\n * contain `[{ name: 'id', delimiter: '/', optional: false, repeat: false }]`.\n *\n * @param  {(string|RegExp|Array)} path\n * @param  {(Array|Object)=}       keys\n * @param  {Object=}               options\n * @return {!RegExp}\n */\n\n\nfunction pathToRegexp(path, keys, options) {\n  if (!isarray(keys)) {\n    options =\n    /** @type {!Object} */\n    keys || options;\n    keys = [];\n  }\n\n  options = options || {};\n\n  if (path instanceof RegExp) {\n    return regexpToRegexp(path,\n    /** @type {!Array} */\n    keys);\n  }\n\n  if (isarray(path)) {\n    return arrayToRegexp(\n    /** @type {!Array} */\n    path,\n    /** @type {!Array} */\n    keys, options);\n  }\n\n  return stringToRegexp(\n  /** @type {string} */\n  path,\n  /** @type {!Array} */\n  keys, options);\n}\n\npathToRegexp_1.parse = parse_1;\npathToRegexp_1.compile = compile_1;\npathToRegexp_1.tokensToFunction = tokensToFunction_1;\npathToRegexp_1.tokensToRegExp = tokensToRegExp_1;\n/*  */\n// $flow-disable-line\n\nvar regexpCompileCache = Object.create(null);\n\nfunction fillParams(path, params, routeMsg) {\n  params = params || {};\n\n  try {\n    var filler = regexpCompileCache[path] || (regexpCompileCache[path] = pathToRegexp_1.compile(path)); // Fix #2505 resolving asterisk routes { name: 'not-found', params: { pathMatch: '/not-found' }}\n    // and fix #3106 so that you can work with location descriptor object having params.pathMatch equal to empty string\n\n    if (typeof params.pathMatch === 'string') {\n      params[0] = params.pathMatch;\n    }\n\n    return filler(params, {\n      pretty: true\n    });\n  } catch (e) {\n    if (true) {\n      // Fix #3072 no warn if `pathMatch` is string\n      warn(typeof params.pathMatch === 'string', \"missing param for \" + routeMsg + \": \" + e.message);\n    }\n\n    return '';\n  } finally {\n    // delete the 0 if it was added\n    delete params[0];\n  }\n}\n/*  */\n\n\nfunction normalizeLocation(raw, current, append, router) {\n  var next = typeof raw === 'string' ? {\n    path: raw\n  } : raw; // named target\n\n  if (next._normalized) {\n    return next;\n  } else if (next.name) {\n    next = extend({}, raw);\n    var params = next.params;\n\n    if (params && typeof params === 'object') {\n      next.params = extend({}, params);\n    }\n\n    return next;\n  } // relative params\n\n\n  if (!next.path && next.params && current) {\n    next = extend({}, next);\n    next._normalized = true;\n    var params$1 = extend(extend({}, current.params), next.params);\n\n    if (current.name) {\n      next.name = current.name;\n      next.params = params$1;\n    } else if (current.matched.length) {\n      var rawPath = current.matched[current.matched.length - 1].path;\n      next.path = fillParams(rawPath, params$1, \"path \" + current.path);\n    } else if (true) {\n      warn(false, \"relative params navigation requires a current route.\");\n    }\n\n    return next;\n  }\n\n  var parsedPath = parsePath(next.path || '');\n  var basePath = current && current.path || '/';\n  var path = parsedPath.path ? resolvePath(parsedPath.path, basePath, append || next.append) : basePath;\n  var query = resolveQuery(parsedPath.query, next.query, router && router.options.parseQuery);\n  var hash = next.hash || parsedPath.hash;\n\n  if (hash && hash.charAt(0) !== '#') {\n    hash = \"#\" + hash;\n  }\n\n  return {\n    _normalized: true,\n    path: path,\n    query: query,\n    hash: hash\n  };\n}\n/*  */\n// work around weird flow bug\n\n\nvar toTypes = [String, Object];\nvar eventTypes = [String, Array];\n\nvar noop = function () {};\n\nvar Link = {\n  name: 'RouterLink',\n  props: {\n    to: {\n      type: toTypes,\n      required: true\n    },\n    tag: {\n      type: String,\n      default: 'a'\n    },\n    exact: Boolean,\n    append: Boolean,\n    replace: Boolean,\n    activeClass: String,\n    exactActiveClass: String,\n    ariaCurrentValue: {\n      type: String,\n      default: 'page'\n    },\n    event: {\n      type: eventTypes,\n      default: 'click'\n    }\n  },\n  render: function render(h) {\n    var this$1 = this;\n    var router = this.$router;\n    var current = this.$route;\n    var ref = router.resolve(this.to, current, this.append);\n    var location = ref.location;\n    var route = ref.route;\n    var href = ref.href;\n    var classes = {};\n    var globalActiveClass = router.options.linkActiveClass;\n    var globalExactActiveClass = router.options.linkExactActiveClass; // Support global empty active class\n\n    var activeClassFallback = globalActiveClass == null ? 'router-link-active' : globalActiveClass;\n    var exactActiveClassFallback = globalExactActiveClass == null ? 'router-link-exact-active' : globalExactActiveClass;\n    var activeClass = this.activeClass == null ? activeClassFallback : this.activeClass;\n    var exactActiveClass = this.exactActiveClass == null ? exactActiveClassFallback : this.exactActiveClass;\n    var compareTarget = route.redirectedFrom ? createRoute(null, normalizeLocation(route.redirectedFrom), null, router) : route;\n    classes[exactActiveClass] = isSameRoute(current, compareTarget);\n    classes[activeClass] = this.exact ? classes[exactActiveClass] : isIncludedRoute(current, compareTarget);\n    var ariaCurrentValue = classes[exactActiveClass] ? this.ariaCurrentValue : null;\n\n    var handler = function (e) {\n      if (guardEvent(e)) {\n        if (this$1.replace) {\n          router.replace(location, noop);\n        } else {\n          router.push(location, noop);\n        }\n      }\n    };\n\n    var on = {\n      click: guardEvent\n    };\n\n    if (Array.isArray(this.event)) {\n      this.event.forEach(function (e) {\n        on[e] = handler;\n      });\n    } else {\n      on[this.event] = handler;\n    }\n\n    var data = {\n      class: classes\n    };\n    var scopedSlot = !this.$scopedSlots.$hasNormal && this.$scopedSlots.default && this.$scopedSlots.default({\n      href: href,\n      route: route,\n      navigate: handler,\n      isActive: classes[activeClass],\n      isExactActive: classes[exactActiveClass]\n    });\n\n    if (scopedSlot) {\n      if (scopedSlot.length === 1) {\n        return scopedSlot[0];\n      } else if (scopedSlot.length > 1 || !scopedSlot.length) {\n        if (true) {\n          warn(false, \"RouterLink with to=\\\"\" + this.to + \"\\\" is trying to use a scoped slot but it didn't provide exactly one child. Wrapping the content with a span element.\");\n        }\n\n        return scopedSlot.length === 0 ? h() : h('span', {}, scopedSlot);\n      }\n    }\n\n    if (this.tag === 'a') {\n      data.on = on;\n      data.attrs = {\n        href: href,\n        'aria-current': ariaCurrentValue\n      };\n    } else {\n      // find the first <a> child and apply listener and href\n      var a = findAnchor(this.$slots.default);\n\n      if (a) {\n        // in case the <a> is a static node\n        a.isStatic = false;\n        var aData = a.data = extend({}, a.data);\n        aData.on = aData.on || {}; // transform existing events in both objects into arrays so we can push later\n\n        for (var event in aData.on) {\n          var handler$1 = aData.on[event];\n\n          if (event in on) {\n            aData.on[event] = Array.isArray(handler$1) ? handler$1 : [handler$1];\n          }\n        } // append new listeners for router-link\n\n\n        for (var event$1 in on) {\n          if (event$1 in aData.on) {\n            // on[event] is always a function\n            aData.on[event$1].push(on[event$1]);\n          } else {\n            aData.on[event$1] = handler;\n          }\n        }\n\n        var aAttrs = a.data.attrs = extend({}, a.data.attrs);\n        aAttrs.href = href;\n        aAttrs['aria-current'] = ariaCurrentValue;\n      } else {\n        // doesn't have <a> child, apply listener to self\n        data.on = on;\n      }\n    }\n\n    return h(this.tag, data, this.$slots.default);\n  }\n};\n\nfunction guardEvent(e) {\n  // don't redirect with control keys\n  if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey) {\n    return;\n  } // don't redirect when preventDefault called\n\n\n  if (e.defaultPrevented) {\n    return;\n  } // don't redirect on right click\n\n\n  if (e.button !== undefined && e.button !== 0) {\n    return;\n  } // don't redirect if `target=\"_blank\"`\n\n\n  if (e.currentTarget && e.currentTarget.getAttribute) {\n    var target = e.currentTarget.getAttribute('target');\n\n    if (/\\b_blank\\b/i.test(target)) {\n      return;\n    }\n  } // this may be a Weex event which doesn't have this method\n\n\n  if (e.preventDefault) {\n    e.preventDefault();\n  }\n\n  return true;\n}\n\nfunction findAnchor(children) {\n  if (children) {\n    var child;\n\n    for (var i = 0; i < children.length; i++) {\n      child = children[i];\n\n      if (child.tag === 'a') {\n        return child;\n      }\n\n      if (child.children && (child = findAnchor(child.children))) {\n        return child;\n      }\n    }\n  }\n}\n\nvar _Vue;\n\nfunction install(Vue) {\n  if (install.installed && _Vue === Vue) {\n    return;\n  }\n\n  install.installed = true;\n  _Vue = Vue;\n\n  var isDef = function (v) {\n    return v !== undefined;\n  };\n\n  var registerInstance = function (vm, callVal) {\n    var i = vm.$options._parentVnode;\n\n    if (isDef(i) && isDef(i = i.data) && isDef(i = i.registerRouteInstance)) {\n      i(vm, callVal);\n    }\n  };\n\n  Vue.mixin({\n    beforeCreate: function beforeCreate() {\n      if (isDef(this.$options.router)) {\n        this._routerRoot = this;\n        this._router = this.$options.router;\n\n        this._router.init(this);\n\n        Vue.util.defineReactive(this, '_route', this._router.history.current);\n      } else {\n        this._routerRoot = this.$parent && this.$parent._routerRoot || this;\n      }\n\n      registerInstance(this, this);\n    },\n    destroyed: function destroyed() {\n      registerInstance(this);\n    }\n  });\n  Object.defineProperty(Vue.prototype, '$router', {\n    get: function get() {\n      return this._routerRoot._router;\n    }\n  });\n  Object.defineProperty(Vue.prototype, '$route', {\n    get: function get() {\n      return this._routerRoot._route;\n    }\n  });\n  Vue.component('RouterView', View);\n  Vue.component('RouterLink', Link);\n  var strats = Vue.config.optionMergeStrategies; // use the same hook merging strategy for route hooks\n\n  strats.beforeRouteEnter = strats.beforeRouteLeave = strats.beforeRouteUpdate = strats.created;\n}\n/*  */\n\n\nvar inBrowser = typeof window !== 'undefined';\n/*  */\n\nfunction createRouteMap(routes, oldPathList, oldPathMap, oldNameMap) {\n  // the path list is used to control path matching priority\n  var pathList = oldPathList || []; // $flow-disable-line\n\n  var pathMap = oldPathMap || Object.create(null); // $flow-disable-line\n\n  var nameMap = oldNameMap || Object.create(null);\n  routes.forEach(function (route) {\n    addRouteRecord(pathList, pathMap, nameMap, route);\n  }); // ensure wildcard routes are always at the end\n\n  for (var i = 0, l = pathList.length; i < l; i++) {\n    if (pathList[i] === '*') {\n      pathList.push(pathList.splice(i, 1)[0]);\n      l--;\n      i--;\n    }\n  }\n\n  if (true) {\n    // warn if routes do not include leading slashes\n    var found = pathList // check for missing leading slash\n    .filter(function (path) {\n      return path && path.charAt(0) !== '*' && path.charAt(0) !== '/';\n    });\n\n    if (found.length > 0) {\n      var pathNames = found.map(function (path) {\n        return \"- \" + path;\n      }).join('\\n');\n      warn(false, \"Non-nested routes must include a leading slash character. Fix the following routes: \\n\" + pathNames);\n    }\n  }\n\n  return {\n    pathList: pathList,\n    pathMap: pathMap,\n    nameMap: nameMap\n  };\n}\n\nfunction addRouteRecord(pathList, pathMap, nameMap, route, parent, matchAs) {\n  var path = route.path;\n  var name = route.name;\n\n  if (true) {\n    assert(path != null, \"\\\"path\\\" is required in a route configuration.\");\n    assert(typeof route.component !== 'string', \"route config \\\"component\\\" for path: \" + String(path || name) + \" cannot be a \" + \"string id. Use an actual component instead.\");\n  }\n\n  var pathToRegexpOptions = route.pathToRegexpOptions || {};\n  var normalizedPath = normalizePath(path, parent, pathToRegexpOptions.strict);\n\n  if (typeof route.caseSensitive === 'boolean') {\n    pathToRegexpOptions.sensitive = route.caseSensitive;\n  }\n\n  var record = {\n    path: normalizedPath,\n    regex: compileRouteRegex(normalizedPath, pathToRegexpOptions),\n    components: route.components || {\n      default: route.component\n    },\n    instances: {},\n    enteredCbs: {},\n    name: name,\n    parent: parent,\n    matchAs: matchAs,\n    redirect: route.redirect,\n    beforeEnter: route.beforeEnter,\n    meta: route.meta || {},\n    props: route.props == null ? {} : route.components ? route.props : {\n      default: route.props\n    }\n  };\n\n  if (route.children) {\n    // Warn if route is named, does not redirect and has a default child route.\n    // If users navigate to this route by name, the default child will\n    // not be rendered (GH Issue #629)\n    if (true) {\n      if (route.name && !route.redirect && route.children.some(function (child) {\n        return /^\\/?$/.test(child.path);\n      })) {\n        warn(false, \"Named Route '\" + route.name + \"' has a default child route. \" + \"When navigating to this named route (:to=\\\"{name: '\" + route.name + \"'\\\"), \" + \"the default child route will not be rendered. Remove the name from \" + \"this route and use the name of the default child route for named \" + \"links instead.\");\n      }\n    }\n\n    route.children.forEach(function (child) {\n      var childMatchAs = matchAs ? cleanPath(matchAs + \"/\" + child.path) : undefined;\n      addRouteRecord(pathList, pathMap, nameMap, child, record, childMatchAs);\n    });\n  }\n\n  if (!pathMap[record.path]) {\n    pathList.push(record.path);\n    pathMap[record.path] = record;\n  }\n\n  if (route.alias !== undefined) {\n    var aliases = Array.isArray(route.alias) ? route.alias : [route.alias];\n\n    for (var i = 0; i < aliases.length; ++i) {\n      var alias = aliases[i];\n\n      if ( true && alias === path) {\n        warn(false, \"Found an alias with the same value as the path: \\\"\" + path + \"\\\". You have to remove that alias. It will be ignored in development.\"); // skip in dev to make it work\n\n        continue;\n      }\n\n      var aliasRoute = {\n        path: alias,\n        children: route.children\n      };\n      addRouteRecord(pathList, pathMap, nameMap, aliasRoute, parent, record.path || '/' // matchAs\n      );\n    }\n  }\n\n  if (name) {\n    if (!nameMap[name]) {\n      nameMap[name] = record;\n    } else if ( true && !matchAs) {\n      warn(false, \"Duplicate named routes definition: \" + \"{ name: \\\"\" + name + \"\\\", path: \\\"\" + record.path + \"\\\" }\");\n    }\n  }\n}\n\nfunction compileRouteRegex(path, pathToRegexpOptions) {\n  var regex = pathToRegexp_1(path, [], pathToRegexpOptions);\n\n  if (true) {\n    var keys = Object.create(null);\n    regex.keys.forEach(function (key) {\n      warn(!keys[key.name], \"Duplicate param keys in route with path: \\\"\" + path + \"\\\"\");\n      keys[key.name] = true;\n    });\n  }\n\n  return regex;\n}\n\nfunction normalizePath(path, parent, strict) {\n  if (!strict) {\n    path = path.replace(/\\/$/, '');\n  }\n\n  if (path[0] === '/') {\n    return path;\n  }\n\n  if (parent == null) {\n    return path;\n  }\n\n  return cleanPath(parent.path + \"/\" + path);\n}\n/*  */\n\n\nfunction createMatcher(routes, router) {\n  var ref = createRouteMap(routes);\n  var pathList = ref.pathList;\n  var pathMap = ref.pathMap;\n  var nameMap = ref.nameMap;\n\n  function addRoutes(routes) {\n    createRouteMap(routes, pathList, pathMap, nameMap);\n  }\n\n  function match(raw, currentRoute, redirectedFrom) {\n    var location = normalizeLocation(raw, currentRoute, false, router);\n    var name = location.name;\n\n    if (name) {\n      var record = nameMap[name];\n\n      if (true) {\n        warn(record, \"Route with name '\" + name + \"' does not exist\");\n      }\n\n      if (!record) {\n        return _createRoute(null, location);\n      }\n\n      var paramNames = record.regex.keys.filter(function (key) {\n        return !key.optional;\n      }).map(function (key) {\n        return key.name;\n      });\n\n      if (typeof location.params !== 'object') {\n        location.params = {};\n      }\n\n      if (currentRoute && typeof currentRoute.params === 'object') {\n        for (var key in currentRoute.params) {\n          if (!(key in location.params) && paramNames.indexOf(key) > -1) {\n            location.params[key] = currentRoute.params[key];\n          }\n        }\n      }\n\n      location.path = fillParams(record.path, location.params, \"named route \\\"\" + name + \"\\\"\");\n      return _createRoute(record, location, redirectedFrom);\n    } else if (location.path) {\n      location.params = {};\n\n      for (var i = 0; i < pathList.length; i++) {\n        var path = pathList[i];\n        var record$1 = pathMap[path];\n\n        if (matchRoute(record$1.regex, location.path, location.params)) {\n          return _createRoute(record$1, location, redirectedFrom);\n        }\n      }\n    } // no match\n\n\n    return _createRoute(null, location);\n  }\n\n  function redirect(record, location) {\n    var originalRedirect = record.redirect;\n    var redirect = typeof originalRedirect === 'function' ? originalRedirect(createRoute(record, location, null, router)) : originalRedirect;\n\n    if (typeof redirect === 'string') {\n      redirect = {\n        path: redirect\n      };\n    }\n\n    if (!redirect || typeof redirect !== 'object') {\n      if (true) {\n        warn(false, \"invalid redirect option: \" + JSON.stringify(redirect));\n      }\n\n      return _createRoute(null, location);\n    }\n\n    var re = redirect;\n    var name = re.name;\n    var path = re.path;\n    var query = location.query;\n    var hash = location.hash;\n    var params = location.params;\n    query = re.hasOwnProperty('query') ? re.query : query;\n    hash = re.hasOwnProperty('hash') ? re.hash : hash;\n    params = re.hasOwnProperty('params') ? re.params : params;\n\n    if (name) {\n      // resolved named direct\n      var targetRecord = nameMap[name];\n\n      if (true) {\n        assert(targetRecord, \"redirect failed: named route \\\"\" + name + \"\\\" not found.\");\n      }\n\n      return match({\n        _normalized: true,\n        name: name,\n        query: query,\n        hash: hash,\n        params: params\n      }, undefined, location);\n    } else if (path) {\n      // 1. resolve relative redirect\n      var rawPath = resolveRecordPath(path, record); // 2. resolve params\n\n      var resolvedPath = fillParams(rawPath, params, \"redirect route with path \\\"\" + rawPath + \"\\\"\"); // 3. rematch with existing query and hash\n\n      return match({\n        _normalized: true,\n        path: resolvedPath,\n        query: query,\n        hash: hash\n      }, undefined, location);\n    } else {\n      if (true) {\n        warn(false, \"invalid redirect option: \" + JSON.stringify(redirect));\n      }\n\n      return _createRoute(null, location);\n    }\n  }\n\n  function alias(record, location, matchAs) {\n    var aliasedPath = fillParams(matchAs, location.params, \"aliased route with path \\\"\" + matchAs + \"\\\"\");\n    var aliasedMatch = match({\n      _normalized: true,\n      path: aliasedPath\n    });\n\n    if (aliasedMatch) {\n      var matched = aliasedMatch.matched;\n      var aliasedRecord = matched[matched.length - 1];\n      location.params = aliasedMatch.params;\n      return _createRoute(aliasedRecord, location);\n    }\n\n    return _createRoute(null, location);\n  }\n\n  function _createRoute(record, location, redirectedFrom) {\n    if (record && record.redirect) {\n      return redirect(record, redirectedFrom || location);\n    }\n\n    if (record && record.matchAs) {\n      return alias(record, location, record.matchAs);\n    }\n\n    return createRoute(record, location, redirectedFrom, router);\n  }\n\n  return {\n    match: match,\n    addRoutes: addRoutes\n  };\n}\n\nfunction matchRoute(regex, path, params) {\n  var m;\n\n  try {\n    m = decodeURI(path).match(regex);\n  } catch (err) {\n    if (true) {\n      warn(false, \"Error decoding \\\"\" + path + \"\\\". Leaving it intact.\");\n    }\n  }\n\n  if (!m) {\n    return false;\n  } else if (!params) {\n    return true;\n  }\n\n  for (var i = 1, len = m.length; i < len; ++i) {\n    var key = regex.keys[i - 1];\n\n    if (key) {\n      // Fix #1994: using * with props: true generates a param named 0\n      params[key.name || 'pathMatch'] = m[i];\n    }\n  }\n\n  return true;\n}\n\nfunction resolveRecordPath(path, record) {\n  return resolvePath(path, record.parent ? record.parent.path : '/', true);\n}\n/*  */\n// use User Timing api (if present) for more accurate key precision\n\n\nvar Time = inBrowser && window.performance && window.performance.now ? window.performance : Date;\n\nfunction genStateKey() {\n  return Time.now().toFixed(3);\n}\n\nvar _key = genStateKey();\n\nfunction getStateKey() {\n  return _key;\n}\n\nfunction setStateKey(key) {\n  return _key = key;\n}\n/*  */\n\n\nvar positionStore = Object.create(null);\n\nfunction setupScroll() {\n  // Prevent browser scroll behavior on History popstate\n  if ('scrollRestoration' in window.history) {\n    window.history.scrollRestoration = 'manual';\n  } // Fix for #1585 for Firefox\n  // Fix for #2195 Add optional third attribute to workaround a bug in safari https://bugs.webkit.org/show_bug.cgi?id=182678\n  // Fix for #2774 Support for apps loaded from Windows file shares not mapped to network drives: replaced location.origin with\n  // window.location.protocol + '//' + window.location.host\n  // location.host contains the port and location.hostname doesn't\n\n\n  var protocolAndPath = window.location.protocol + '//' + window.location.host;\n  var absolutePath = window.location.href.replace(protocolAndPath, ''); // preserve existing history state as it could be overriden by the user\n\n  var stateCopy = extend({}, window.history.state);\n  stateCopy.key = getStateKey();\n  window.history.replaceState(stateCopy, '', absolutePath);\n  window.addEventListener('popstate', handlePopState);\n  return function () {\n    window.removeEventListener('popstate', handlePopState);\n  };\n}\n\nfunction handleScroll(router, to, from, isPop) {\n  if (!router.app) {\n    return;\n  }\n\n  var behavior = router.options.scrollBehavior;\n\n  if (!behavior) {\n    return;\n  }\n\n  if (true) {\n    assert(typeof behavior === 'function', \"scrollBehavior must be a function\");\n  } // wait until re-render finishes before scrolling\n\n\n  router.app.$nextTick(function () {\n    var position = getScrollPosition();\n    var shouldScroll = behavior.call(router, to, from, isPop ? position : null);\n\n    if (!shouldScroll) {\n      return;\n    }\n\n    if (typeof shouldScroll.then === 'function') {\n      shouldScroll.then(function (shouldScroll) {\n        scrollToPosition(shouldScroll, position);\n      }).catch(function (err) {\n        if (true) {\n          assert(false, err.toString());\n        }\n      });\n    } else {\n      scrollToPosition(shouldScroll, position);\n    }\n  });\n}\n\nfunction saveScrollPosition() {\n  var key = getStateKey();\n\n  if (key) {\n    positionStore[key] = {\n      x: window.pageXOffset,\n      y: window.pageYOffset\n    };\n  }\n}\n\nfunction handlePopState(e) {\n  saveScrollPosition();\n\n  if (e.state && e.state.key) {\n    setStateKey(e.state.key);\n  }\n}\n\nfunction getScrollPosition() {\n  var key = getStateKey();\n\n  if (key) {\n    return positionStore[key];\n  }\n}\n\nfunction getElementPosition(el, offset) {\n  var docEl = document.documentElement;\n  var docRect = docEl.getBoundingClientRect();\n  var elRect = el.getBoundingClientRect();\n  return {\n    x: elRect.left - docRect.left - offset.x,\n    y: elRect.top - docRect.top - offset.y\n  };\n}\n\nfunction isValidPosition(obj) {\n  return isNumber(obj.x) || isNumber(obj.y);\n}\n\nfunction normalizePosition(obj) {\n  return {\n    x: isNumber(obj.x) ? obj.x : window.pageXOffset,\n    y: isNumber(obj.y) ? obj.y : window.pageYOffset\n  };\n}\n\nfunction normalizeOffset(obj) {\n  return {\n    x: isNumber(obj.x) ? obj.x : 0,\n    y: isNumber(obj.y) ? obj.y : 0\n  };\n}\n\nfunction isNumber(v) {\n  return typeof v === 'number';\n}\n\nvar hashStartsWithNumberRE = /^#\\d/;\n\nfunction scrollToPosition(shouldScroll, position) {\n  var isObject = typeof shouldScroll === 'object';\n\n  if (isObject && typeof shouldScroll.selector === 'string') {\n    // getElementById would still fail if the selector contains a more complicated query like #main[data-attr]\n    // but at the same time, it doesn't make much sense to select an element with an id and an extra selector\n    var el = hashStartsWithNumberRE.test(shouldScroll.selector) // $flow-disable-line\n    ? document.getElementById(shouldScroll.selector.slice(1)) // $flow-disable-line\n    : document.querySelector(shouldScroll.selector);\n\n    if (el) {\n      var offset = shouldScroll.offset && typeof shouldScroll.offset === 'object' ? shouldScroll.offset : {};\n      offset = normalizeOffset(offset);\n      position = getElementPosition(el, offset);\n    } else if (isValidPosition(shouldScroll)) {\n      position = normalizePosition(shouldScroll);\n    }\n  } else if (isObject && isValidPosition(shouldScroll)) {\n    position = normalizePosition(shouldScroll);\n  }\n\n  if (position) {\n    window.scrollTo(position.x, position.y);\n  }\n}\n/*  */\n\n\nvar supportsPushState = inBrowser && function () {\n  var ua = window.navigator.userAgent;\n\n  if ((ua.indexOf('Android 2.') !== -1 || ua.indexOf('Android 4.0') !== -1) && ua.indexOf('Mobile Safari') !== -1 && ua.indexOf('Chrome') === -1 && ua.indexOf('Windows Phone') === -1) {\n    return false;\n  }\n\n  return window.history && typeof window.history.pushState === 'function';\n}();\n\nfunction pushState(url, replace) {\n  saveScrollPosition(); // try...catch the pushState call to get around Safari\n  // DOM Exception 18 where it limits to 100 pushState calls\n\n  var history = window.history;\n\n  try {\n    if (replace) {\n      // preserve existing history state as it could be overriden by the user\n      var stateCopy = extend({}, history.state);\n      stateCopy.key = getStateKey();\n      history.replaceState(stateCopy, '', url);\n    } else {\n      history.pushState({\n        key: setStateKey(genStateKey())\n      }, '', url);\n    }\n  } catch (e) {\n    window.location[replace ? 'replace' : 'assign'](url);\n  }\n}\n\nfunction replaceState(url) {\n  pushState(url, true);\n}\n/*  */\n\n\nfunction runQueue(queue, fn, cb) {\n  var step = function (index) {\n    if (index >= queue.length) {\n      cb();\n    } else {\n      if (queue[index]) {\n        fn(queue[index], function () {\n          step(index + 1);\n        });\n      } else {\n        step(index + 1);\n      }\n    }\n  };\n\n  step(0);\n} // When changing thing, also edit router.d.ts\n\n\nvar NavigationFailureType = {\n  redirected: 2,\n  aborted: 4,\n  cancelled: 8,\n  duplicated: 16\n};\n\nfunction createNavigationRedirectedError(from, to) {\n  return createRouterError(from, to, NavigationFailureType.redirected, \"Redirected when going from \\\"\" + from.fullPath + \"\\\" to \\\"\" + stringifyRoute(to) + \"\\\" via a navigation guard.\");\n}\n\nfunction createNavigationDuplicatedError(from, to) {\n  var error = createRouterError(from, to, NavigationFailureType.duplicated, \"Avoided redundant navigation to current location: \\\"\" + from.fullPath + \"\\\".\"); // backwards compatible with the first introduction of Errors\n\n  error.name = 'NavigationDuplicated';\n  return error;\n}\n\nfunction createNavigationCancelledError(from, to) {\n  return createRouterError(from, to, NavigationFailureType.cancelled, \"Navigation cancelled from \\\"\" + from.fullPath + \"\\\" to \\\"\" + to.fullPath + \"\\\" with a new navigation.\");\n}\n\nfunction createNavigationAbortedError(from, to) {\n  return createRouterError(from, to, NavigationFailureType.aborted, \"Navigation aborted from \\\"\" + from.fullPath + \"\\\" to \\\"\" + to.fullPath + \"\\\" via a navigation guard.\");\n}\n\nfunction createRouterError(from, to, type, message) {\n  var error = new Error(message);\n  error._isRouter = true;\n  error.from = from;\n  error.to = to;\n  error.type = type;\n  return error;\n}\n\nvar propertiesToLog = ['params', 'query', 'hash'];\n\nfunction stringifyRoute(to) {\n  if (typeof to === 'string') {\n    return to;\n  }\n\n  if ('path' in to) {\n    return to.path;\n  }\n\n  var location = {};\n  propertiesToLog.forEach(function (key) {\n    if (key in to) {\n      location[key] = to[key];\n    }\n  });\n  return JSON.stringify(location, null, 2);\n}\n\nfunction isError(err) {\n  return Object.prototype.toString.call(err).indexOf('Error') > -1;\n}\n\nfunction isNavigationFailure(err, errorType) {\n  return isError(err) && err._isRouter && (errorType == null || err.type === errorType);\n}\n/*  */\n\n\nfunction resolveAsyncComponents(matched) {\n  return function (to, from, next) {\n    var hasAsync = false;\n    var pending = 0;\n    var error = null;\n    flatMapComponents(matched, function (def, _, match, key) {\n      // if it's a function and doesn't have cid attached,\n      // assume it's an async component resolve function.\n      // we are not using Vue's default async resolving mechanism because\n      // we want to halt the navigation until the incoming component has been\n      // resolved.\n      if (typeof def === 'function' && def.cid === undefined) {\n        hasAsync = true;\n        pending++;\n        var resolve = once(function (resolvedDef) {\n          if (isESModule(resolvedDef)) {\n            resolvedDef = resolvedDef.default;\n          } // save resolved on async factory in case it's used elsewhere\n\n\n          def.resolved = typeof resolvedDef === 'function' ? resolvedDef : _Vue.extend(resolvedDef);\n          match.components[key] = resolvedDef;\n          pending--;\n\n          if (pending <= 0) {\n            next();\n          }\n        });\n        var reject = once(function (reason) {\n          var msg = \"Failed to resolve async component \" + key + \": \" + reason;\n           true && warn(false, msg);\n\n          if (!error) {\n            error = isError(reason) ? reason : new Error(msg);\n            next(error);\n          }\n        });\n        var res;\n\n        try {\n          res = def(resolve, reject);\n        } catch (e) {\n          reject(e);\n        }\n\n        if (res) {\n          if (typeof res.then === 'function') {\n            res.then(resolve, reject);\n          } else {\n            // new syntax in Vue 2.3\n            var comp = res.component;\n\n            if (comp && typeof comp.then === 'function') {\n              comp.then(resolve, reject);\n            }\n          }\n        }\n      }\n    });\n\n    if (!hasAsync) {\n      next();\n    }\n  };\n}\n\nfunction flatMapComponents(matched, fn) {\n  return flatten(matched.map(function (m) {\n    return Object.keys(m.components).map(function (key) {\n      return fn(m.components[key], m.instances[key], m, key);\n    });\n  }));\n}\n\nfunction flatten(arr) {\n  return Array.prototype.concat.apply([], arr);\n}\n\nvar hasSymbol = typeof Symbol === 'function' && typeof Symbol.toStringTag === 'symbol';\n\nfunction isESModule(obj) {\n  return obj.__esModule || hasSymbol && obj[Symbol.toStringTag] === 'Module';\n} // in Webpack 2, require.ensure now also returns a Promise\n// so the resolve/reject functions may get called an extra time\n// if the user uses an arrow function shorthand that happens to\n// return that Promise.\n\n\nfunction once(fn) {\n  var called = false;\n  return function () {\n    var args = [],\n        len = arguments.length;\n\n    while (len--) args[len] = arguments[len];\n\n    if (called) {\n      return;\n    }\n\n    called = true;\n    return fn.apply(this, args);\n  };\n}\n/*  */\n\n\nvar History = function History(router, base) {\n  this.router = router;\n  this.base = normalizeBase(base); // start with a route object that stands for \"nowhere\"\n\n  this.current = START;\n  this.pending = null;\n  this.ready = false;\n  this.readyCbs = [];\n  this.readyErrorCbs = [];\n  this.errorCbs = [];\n  this.listeners = [];\n};\n\nHistory.prototype.listen = function listen(cb) {\n  this.cb = cb;\n};\n\nHistory.prototype.onReady = function onReady(cb, errorCb) {\n  if (this.ready) {\n    cb();\n  } else {\n    this.readyCbs.push(cb);\n\n    if (errorCb) {\n      this.readyErrorCbs.push(errorCb);\n    }\n  }\n};\n\nHistory.prototype.onError = function onError(errorCb) {\n  this.errorCbs.push(errorCb);\n};\n\nHistory.prototype.transitionTo = function transitionTo(location, onComplete, onAbort) {\n  var this$1 = this;\n  var route; // catch redirect option https://github.com/vuejs/vue-router/issues/3201\n\n  try {\n    route = this.router.match(location, this.current);\n  } catch (e) {\n    this.errorCbs.forEach(function (cb) {\n      cb(e);\n    }); // Exception should still be thrown\n\n    throw e;\n  }\n\n  var prev = this.current;\n  this.confirmTransition(route, function () {\n    this$1.updateRoute(route);\n    onComplete && onComplete(route);\n    this$1.ensureURL();\n    this$1.router.afterHooks.forEach(function (hook) {\n      hook && hook(route, prev);\n    }); // fire ready cbs once\n\n    if (!this$1.ready) {\n      this$1.ready = true;\n      this$1.readyCbs.forEach(function (cb) {\n        cb(route);\n      });\n    }\n  }, function (err) {\n    if (onAbort) {\n      onAbort(err);\n    }\n\n    if (err && !this$1.ready) {\n      // Initial redirection should not mark the history as ready yet\n      // because it's triggered by the redirection instead\n      // https://github.com/vuejs/vue-router/issues/3225\n      // https://github.com/vuejs/vue-router/issues/3331\n      if (!isNavigationFailure(err, NavigationFailureType.redirected) || prev !== START) {\n        this$1.ready = true;\n        this$1.readyErrorCbs.forEach(function (cb) {\n          cb(err);\n        });\n      }\n    }\n  });\n};\n\nHistory.prototype.confirmTransition = function confirmTransition(route, onComplete, onAbort) {\n  var this$1 = this;\n  var current = this.current;\n  this.pending = route;\n\n  var abort = function (err) {\n    // changed after adding errors with\n    // https://github.com/vuejs/vue-router/pull/3047 before that change,\n    // redirect and aborted navigation would produce an err == null\n    if (!isNavigationFailure(err) && isError(err)) {\n      if (this$1.errorCbs.length) {\n        this$1.errorCbs.forEach(function (cb) {\n          cb(err);\n        });\n      } else {\n        warn(false, 'uncaught error during route navigation:');\n        console.error(err);\n      }\n    }\n\n    onAbort && onAbort(err);\n  };\n\n  var lastRouteIndex = route.matched.length - 1;\n  var lastCurrentIndex = current.matched.length - 1;\n\n  if (isSameRoute(route, current) && // in the case the route map has been dynamically appended to\n  lastRouteIndex === lastCurrentIndex && route.matched[lastRouteIndex] === current.matched[lastCurrentIndex]) {\n    this.ensureURL();\n    return abort(createNavigationDuplicatedError(current, route));\n  }\n\n  var ref = resolveQueue(this.current.matched, route.matched);\n  var updated = ref.updated;\n  var deactivated = ref.deactivated;\n  var activated = ref.activated;\n  var queue = [].concat( // in-component leave guards\n  extractLeaveGuards(deactivated), // global before hooks\n  this.router.beforeHooks, // in-component update hooks\n  extractUpdateHooks(updated), // in-config enter guards\n  activated.map(function (m) {\n    return m.beforeEnter;\n  }), // async components\n  resolveAsyncComponents(activated));\n\n  var iterator = function (hook, next) {\n    if (this$1.pending !== route) {\n      return abort(createNavigationCancelledError(current, route));\n    }\n\n    try {\n      hook(route, current, function (to) {\n        if (to === false) {\n          // next(false) -> abort navigation, ensure current URL\n          this$1.ensureURL(true);\n          abort(createNavigationAbortedError(current, route));\n        } else if (isError(to)) {\n          this$1.ensureURL(true);\n          abort(to);\n        } else if (typeof to === 'string' || typeof to === 'object' && (typeof to.path === 'string' || typeof to.name === 'string')) {\n          // next('/') or next({ path: '/' }) -> redirect\n          abort(createNavigationRedirectedError(current, route));\n\n          if (typeof to === 'object' && to.replace) {\n            this$1.replace(to);\n          } else {\n            this$1.push(to);\n          }\n        } else {\n          // confirm transition and pass on the value\n          next(to);\n        }\n      });\n    } catch (e) {\n      abort(e);\n    }\n  };\n\n  runQueue(queue, iterator, function () {\n    // wait until async components are resolved before\n    // extracting in-component enter guards\n    var enterGuards = extractEnterGuards(activated);\n    var queue = enterGuards.concat(this$1.router.resolveHooks);\n    runQueue(queue, iterator, function () {\n      if (this$1.pending !== route) {\n        return abort(createNavigationCancelledError(current, route));\n      }\n\n      this$1.pending = null;\n      onComplete(route);\n\n      if (this$1.router.app) {\n        this$1.router.app.$nextTick(function () {\n          handleRouteEntered(route);\n        });\n      }\n    });\n  });\n};\n\nHistory.prototype.updateRoute = function updateRoute(route) {\n  this.current = route;\n  this.cb && this.cb(route);\n};\n\nHistory.prototype.setupListeners = function setupListeners() {// Default implementation is empty\n};\n\nHistory.prototype.teardown = function teardown() {\n  // clean up event listeners\n  // https://github.com/vuejs/vue-router/issues/2341\n  this.listeners.forEach(function (cleanupListener) {\n    cleanupListener();\n  });\n  this.listeners = []; // reset current history route\n  // https://github.com/vuejs/vue-router/issues/3294\n\n  this.current = START;\n  this.pending = null;\n};\n\nfunction normalizeBase(base) {\n  if (!base) {\n    if (inBrowser) {\n      // respect <base> tag\n      var baseEl = document.querySelector('base');\n      base = baseEl && baseEl.getAttribute('href') || '/'; // strip full URL origin\n\n      base = base.replace(/^https?:\\/\\/[^\\/]+/, '');\n    } else {\n      base = '/';\n    }\n  } // make sure there's the starting slash\n\n\n  if (base.charAt(0) !== '/') {\n    base = '/' + base;\n  } // remove trailing slash\n\n\n  return base.replace(/\\/$/, '');\n}\n\nfunction resolveQueue(current, next) {\n  var i;\n  var max = Math.max(current.length, next.length);\n\n  for (i = 0; i < max; i++) {\n    if (current[i] !== next[i]) {\n      break;\n    }\n  }\n\n  return {\n    updated: next.slice(0, i),\n    activated: next.slice(i),\n    deactivated: current.slice(i)\n  };\n}\n\nfunction extractGuards(records, name, bind, reverse) {\n  var guards = flatMapComponents(records, function (def, instance, match, key) {\n    var guard = extractGuard(def, name);\n\n    if (guard) {\n      return Array.isArray(guard) ? guard.map(function (guard) {\n        return bind(guard, instance, match, key);\n      }) : bind(guard, instance, match, key);\n    }\n  });\n  return flatten(reverse ? guards.reverse() : guards);\n}\n\nfunction extractGuard(def, key) {\n  if (typeof def !== 'function') {\n    // extend now so that global mixins are applied.\n    def = _Vue.extend(def);\n  }\n\n  return def.options[key];\n}\n\nfunction extractLeaveGuards(deactivated) {\n  return extractGuards(deactivated, 'beforeRouteLeave', bindGuard, true);\n}\n\nfunction extractUpdateHooks(updated) {\n  return extractGuards(updated, 'beforeRouteUpdate', bindGuard);\n}\n\nfunction bindGuard(guard, instance) {\n  if (instance) {\n    return function boundRouteGuard() {\n      return guard.apply(instance, arguments);\n    };\n  }\n}\n\nfunction extractEnterGuards(activated) {\n  return extractGuards(activated, 'beforeRouteEnter', function (guard, _, match, key) {\n    return bindEnterGuard(guard, match, key);\n  });\n}\n\nfunction bindEnterGuard(guard, match, key) {\n  return function routeEnterGuard(to, from, next) {\n    return guard(to, from, function (cb) {\n      if (typeof cb === 'function') {\n        if (!match.enteredCbs[key]) {\n          match.enteredCbs[key] = [];\n        }\n\n        match.enteredCbs[key].push(cb);\n      }\n\n      next(cb);\n    });\n  };\n}\n/*  */\n\n\nvar HTML5History = /*@__PURE__*/function (History) {\n  function HTML5History(router, base) {\n    History.call(this, router, base);\n    this._startLocation = getLocation(this.base);\n  }\n\n  if (History) HTML5History.__proto__ = History;\n  HTML5History.prototype = Object.create(History && History.prototype);\n  HTML5History.prototype.constructor = HTML5History;\n\n  HTML5History.prototype.setupListeners = function setupListeners() {\n    var this$1 = this;\n\n    if (this.listeners.length > 0) {\n      return;\n    }\n\n    var router = this.router;\n    var expectScroll = router.options.scrollBehavior;\n    var supportsScroll = supportsPushState && expectScroll;\n\n    if (supportsScroll) {\n      this.listeners.push(setupScroll());\n    }\n\n    var handleRoutingEvent = function () {\n      var current = this$1.current; // Avoiding first `popstate` event dispatched in some browsers but first\n      // history route not updated since async guard at the same time.\n\n      var location = getLocation(this$1.base);\n\n      if (this$1.current === START && location === this$1._startLocation) {\n        return;\n      }\n\n      this$1.transitionTo(location, function (route) {\n        if (supportsScroll) {\n          handleScroll(router, route, current, true);\n        }\n      });\n    };\n\n    window.addEventListener('popstate', handleRoutingEvent);\n    this.listeners.push(function () {\n      window.removeEventListener('popstate', handleRoutingEvent);\n    });\n  };\n\n  HTML5History.prototype.go = function go(n) {\n    window.history.go(n);\n  };\n\n  HTML5History.prototype.push = function push(location, onComplete, onAbort) {\n    var this$1 = this;\n    var ref = this;\n    var fromRoute = ref.current;\n    this.transitionTo(location, function (route) {\n      pushState(cleanPath(this$1.base + route.fullPath));\n      handleScroll(this$1.router, route, fromRoute, false);\n      onComplete && onComplete(route);\n    }, onAbort);\n  };\n\n  HTML5History.prototype.replace = function replace(location, onComplete, onAbort) {\n    var this$1 = this;\n    var ref = this;\n    var fromRoute = ref.current;\n    this.transitionTo(location, function (route) {\n      replaceState(cleanPath(this$1.base + route.fullPath));\n      handleScroll(this$1.router, route, fromRoute, false);\n      onComplete && onComplete(route);\n    }, onAbort);\n  };\n\n  HTML5History.prototype.ensureURL = function ensureURL(push) {\n    if (getLocation(this.base) !== this.current.fullPath) {\n      var current = cleanPath(this.base + this.current.fullPath);\n      push ? pushState(current) : replaceState(current);\n    }\n  };\n\n  HTML5History.prototype.getCurrentLocation = function getCurrentLocation() {\n    return getLocation(this.base);\n  };\n\n  return HTML5History;\n}(History);\n\nfunction getLocation(base) {\n  var path = window.location.pathname;\n\n  if (base && path.toLowerCase().indexOf(base.toLowerCase()) === 0) {\n    path = path.slice(base.length);\n  }\n\n  return (path || '/') + window.location.search + window.location.hash;\n}\n/*  */\n\n\nvar HashHistory = /*@__PURE__*/function (History) {\n  function HashHistory(router, base, fallback) {\n    History.call(this, router, base); // check history fallback deeplinking\n\n    if (fallback && checkFallback(this.base)) {\n      return;\n    }\n\n    ensureSlash();\n  }\n\n  if (History) HashHistory.__proto__ = History;\n  HashHistory.prototype = Object.create(History && History.prototype);\n  HashHistory.prototype.constructor = HashHistory; // this is delayed until the app mounts\n  // to avoid the hashchange listener being fired too early\n\n  HashHistory.prototype.setupListeners = function setupListeners() {\n    var this$1 = this;\n\n    if (this.listeners.length > 0) {\n      return;\n    }\n\n    var router = this.router;\n    var expectScroll = router.options.scrollBehavior;\n    var supportsScroll = supportsPushState && expectScroll;\n\n    if (supportsScroll) {\n      this.listeners.push(setupScroll());\n    }\n\n    var handleRoutingEvent = function () {\n      var current = this$1.current;\n\n      if (!ensureSlash()) {\n        return;\n      }\n\n      this$1.transitionTo(getHash(), function (route) {\n        if (supportsScroll) {\n          handleScroll(this$1.router, route, current, true);\n        }\n\n        if (!supportsPushState) {\n          replaceHash(route.fullPath);\n        }\n      });\n    };\n\n    var eventType = supportsPushState ? 'popstate' : 'hashchange';\n    window.addEventListener(eventType, handleRoutingEvent);\n    this.listeners.push(function () {\n      window.removeEventListener(eventType, handleRoutingEvent);\n    });\n  };\n\n  HashHistory.prototype.push = function push(location, onComplete, onAbort) {\n    var this$1 = this;\n    var ref = this;\n    var fromRoute = ref.current;\n    this.transitionTo(location, function (route) {\n      pushHash(route.fullPath);\n      handleScroll(this$1.router, route, fromRoute, false);\n      onComplete && onComplete(route);\n    }, onAbort);\n  };\n\n  HashHistory.prototype.replace = function replace(location, onComplete, onAbort) {\n    var this$1 = this;\n    var ref = this;\n    var fromRoute = ref.current;\n    this.transitionTo(location, function (route) {\n      replaceHash(route.fullPath);\n      handleScroll(this$1.router, route, fromRoute, false);\n      onComplete && onComplete(route);\n    }, onAbort);\n  };\n\n  HashHistory.prototype.go = function go(n) {\n    window.history.go(n);\n  };\n\n  HashHistory.prototype.ensureURL = function ensureURL(push) {\n    var current = this.current.fullPath;\n\n    if (getHash() !== current) {\n      push ? pushHash(current) : replaceHash(current);\n    }\n  };\n\n  HashHistory.prototype.getCurrentLocation = function getCurrentLocation() {\n    return getHash();\n  };\n\n  return HashHistory;\n}(History);\n\nfunction checkFallback(base) {\n  var location = getLocation(base);\n\n  if (!/^\\/#/.test(location)) {\n    window.location.replace(cleanPath(base + '/#' + location));\n    return true;\n  }\n}\n\nfunction ensureSlash() {\n  var path = getHash();\n\n  if (path.charAt(0) === '/') {\n    return true;\n  }\n\n  replaceHash('/' + path);\n  return false;\n}\n\nfunction getHash() {\n  // We can't use window.location.hash here because it's not\n  // consistent across browsers - Firefox will pre-decode it!\n  var href = window.location.href;\n  var index = href.indexOf('#'); // empty path\n\n  if (index < 0) {\n    return '';\n  }\n\n  href = href.slice(index + 1);\n  return href;\n}\n\nfunction getUrl(path) {\n  var href = window.location.href;\n  var i = href.indexOf('#');\n  var base = i >= 0 ? href.slice(0, i) : href;\n  return base + \"#\" + path;\n}\n\nfunction pushHash(path) {\n  if (supportsPushState) {\n    pushState(getUrl(path));\n  } else {\n    window.location.hash = path;\n  }\n}\n\nfunction replaceHash(path) {\n  if (supportsPushState) {\n    replaceState(getUrl(path));\n  } else {\n    window.location.replace(getUrl(path));\n  }\n}\n/*  */\n\n\nvar AbstractHistory = /*@__PURE__*/function (History) {\n  function AbstractHistory(router, base) {\n    History.call(this, router, base);\n    this.stack = [];\n    this.index = -1;\n  }\n\n  if (History) AbstractHistory.__proto__ = History;\n  AbstractHistory.prototype = Object.create(History && History.prototype);\n  AbstractHistory.prototype.constructor = AbstractHistory;\n\n  AbstractHistory.prototype.push = function push(location, onComplete, onAbort) {\n    var this$1 = this;\n    this.transitionTo(location, function (route) {\n      this$1.stack = this$1.stack.slice(0, this$1.index + 1).concat(route);\n      this$1.index++;\n      onComplete && onComplete(route);\n    }, onAbort);\n  };\n\n  AbstractHistory.prototype.replace = function replace(location, onComplete, onAbort) {\n    var this$1 = this;\n    this.transitionTo(location, function (route) {\n      this$1.stack = this$1.stack.slice(0, this$1.index).concat(route);\n      onComplete && onComplete(route);\n    }, onAbort);\n  };\n\n  AbstractHistory.prototype.go = function go(n) {\n    var this$1 = this;\n    var targetIndex = this.index + n;\n\n    if (targetIndex < 0 || targetIndex >= this.stack.length) {\n      return;\n    }\n\n    var route = this.stack[targetIndex];\n    this.confirmTransition(route, function () {\n      var prev = this$1.current;\n      this$1.index = targetIndex;\n      this$1.updateRoute(route);\n      this$1.router.afterHooks.forEach(function (hook) {\n        hook && hook(route, prev);\n      });\n    }, function (err) {\n      if (isNavigationFailure(err, NavigationFailureType.duplicated)) {\n        this$1.index = targetIndex;\n      }\n    });\n  };\n\n  AbstractHistory.prototype.getCurrentLocation = function getCurrentLocation() {\n    var current = this.stack[this.stack.length - 1];\n    return current ? current.fullPath : '/';\n  };\n\n  AbstractHistory.prototype.ensureURL = function ensureURL() {// noop\n  };\n\n  return AbstractHistory;\n}(History);\n/*  */\n\n\nvar VueRouter = function VueRouter(options) {\n  if (options === void 0) options = {};\n  this.app = null;\n  this.apps = [];\n  this.options = options;\n  this.beforeHooks = [];\n  this.resolveHooks = [];\n  this.afterHooks = [];\n  this.matcher = createMatcher(options.routes || [], this);\n  var mode = options.mode || 'hash';\n  this.fallback = mode === 'history' && !supportsPushState && options.fallback !== false;\n\n  if (this.fallback) {\n    mode = 'hash';\n  }\n\n  if (!inBrowser) {\n    mode = 'abstract';\n  }\n\n  this.mode = mode;\n\n  switch (mode) {\n    case 'history':\n      this.history = new HTML5History(this, options.base);\n      break;\n\n    case 'hash':\n      this.history = new HashHistory(this, options.base, this.fallback);\n      break;\n\n    case 'abstract':\n      this.history = new AbstractHistory(this, options.base);\n      break;\n\n    default:\n      if (true) {\n        assert(false, \"invalid mode: \" + mode);\n      }\n\n  }\n};\n\nvar prototypeAccessors = {\n  currentRoute: {\n    configurable: true\n  }\n};\n\nVueRouter.prototype.match = function match(raw, current, redirectedFrom) {\n  return this.matcher.match(raw, current, redirectedFrom);\n};\n\nprototypeAccessors.currentRoute.get = function () {\n  return this.history && this.history.current;\n};\n\nVueRouter.prototype.init = function init(app\n/* Vue component instance */\n) {\n  var this$1 = this;\n   true && assert(install.installed, \"not installed. Make sure to call `Vue.use(VueRouter)` \" + \"before creating root instance.\");\n  this.apps.push(app); // set up app destroyed handler\n  // https://github.com/vuejs/vue-router/issues/2639\n\n  app.$once('hook:destroyed', function () {\n    // clean out app from this.apps array once destroyed\n    var index = this$1.apps.indexOf(app);\n\n    if (index > -1) {\n      this$1.apps.splice(index, 1);\n    } // ensure we still have a main app or null if no apps\n    // we do not release the router so it can be reused\n\n\n    if (this$1.app === app) {\n      this$1.app = this$1.apps[0] || null;\n    }\n\n    if (!this$1.app) {\n      this$1.history.teardown();\n    }\n  }); // main app previously initialized\n  // return as we don't need to set up new history listener\n\n  if (this.app) {\n    return;\n  }\n\n  this.app = app;\n  var history = this.history;\n\n  if (history instanceof HTML5History || history instanceof HashHistory) {\n    var handleInitialScroll = function (routeOrError) {\n      var from = history.current;\n      var expectScroll = this$1.options.scrollBehavior;\n      var supportsScroll = supportsPushState && expectScroll;\n\n      if (supportsScroll && 'fullPath' in routeOrError) {\n        handleScroll(this$1, routeOrError, from, false);\n      }\n    };\n\n    var setupListeners = function (routeOrError) {\n      history.setupListeners();\n      handleInitialScroll(routeOrError);\n    };\n\n    history.transitionTo(history.getCurrentLocation(), setupListeners, setupListeners);\n  }\n\n  history.listen(function (route) {\n    this$1.apps.forEach(function (app) {\n      app._route = route;\n    });\n  });\n};\n\nVueRouter.prototype.beforeEach = function beforeEach(fn) {\n  return registerHook(this.beforeHooks, fn);\n};\n\nVueRouter.prototype.beforeResolve = function beforeResolve(fn) {\n  return registerHook(this.resolveHooks, fn);\n};\n\nVueRouter.prototype.afterEach = function afterEach(fn) {\n  return registerHook(this.afterHooks, fn);\n};\n\nVueRouter.prototype.onReady = function onReady(cb, errorCb) {\n  this.history.onReady(cb, errorCb);\n};\n\nVueRouter.prototype.onError = function onError(errorCb) {\n  this.history.onError(errorCb);\n};\n\nVueRouter.prototype.push = function push(location, onComplete, onAbort) {\n  var this$1 = this; // $flow-disable-line\n\n  if (!onComplete && !onAbort && typeof Promise !== 'undefined') {\n    return new Promise(function (resolve, reject) {\n      this$1.history.push(location, resolve, reject);\n    });\n  } else {\n    this.history.push(location, onComplete, onAbort);\n  }\n};\n\nVueRouter.prototype.replace = function replace(location, onComplete, onAbort) {\n  var this$1 = this; // $flow-disable-line\n\n  if (!onComplete && !onAbort && typeof Promise !== 'undefined') {\n    return new Promise(function (resolve, reject) {\n      this$1.history.replace(location, resolve, reject);\n    });\n  } else {\n    this.history.replace(location, onComplete, onAbort);\n  }\n};\n\nVueRouter.prototype.go = function go(n) {\n  this.history.go(n);\n};\n\nVueRouter.prototype.back = function back() {\n  this.go(-1);\n};\n\nVueRouter.prototype.forward = function forward() {\n  this.go(1);\n};\n\nVueRouter.prototype.getMatchedComponents = function getMatchedComponents(to) {\n  var route = to ? to.matched ? to : this.resolve(to).route : this.currentRoute;\n\n  if (!route) {\n    return [];\n  }\n\n  return [].concat.apply([], route.matched.map(function (m) {\n    return Object.keys(m.components).map(function (key) {\n      return m.components[key];\n    });\n  }));\n};\n\nVueRouter.prototype.resolve = function resolve(to, current, append) {\n  current = current || this.history.current;\n  var location = normalizeLocation(to, current, append, this);\n  var route = this.match(location, current);\n  var fullPath = route.redirectedFrom || route.fullPath;\n  var base = this.history.base;\n  var href = createHref(base, fullPath, this.mode);\n  return {\n    location: location,\n    route: route,\n    href: href,\n    // for backwards compat\n    normalizedTo: location,\n    resolved: route\n  };\n};\n\nVueRouter.prototype.addRoutes = function addRoutes(routes) {\n  this.matcher.addRoutes(routes);\n\n  if (this.history.current !== START) {\n    this.history.transitionTo(this.history.getCurrentLocation());\n  }\n};\n\nObject.defineProperties(VueRouter.prototype, prototypeAccessors);\n\nfunction registerHook(list, fn) {\n  list.push(fn);\n  return function () {\n    var i = list.indexOf(fn);\n\n    if (i > -1) {\n      list.splice(i, 1);\n    }\n  };\n}\n\nfunction createHref(base, fullPath, mode) {\n  var path = mode === 'hash' ? '#' + fullPath : fullPath;\n  return base ? cleanPath(base + '/' + path) : path;\n}\n\nVueRouter.install = install;\nVueRouter.version = '3.4.6';\nVueRouter.isNavigationFailure = isNavigationFailure;\nVueRouter.NavigationFailureType = NavigationFailureType;\n\nif (inBrowser && window.Vue) {\n  window.Vue.use(VueRouter);\n}\n\n/* harmony default export */ __webpack_exports__[\"default\"] = (VueRouter);\n\n//# sourceURL=webpack:///./node_modules/vue-router/dist/vue-router.esm.js?");
 
 /***/ }),
 
@@ -895,7 +612,7 @@ eval("var g; // This works in non-strict mode\n\ng = function () {\n  return thi
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _app_vue_vue_type_template_id_5ef48958___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./app.vue?vue&type=template&id=5ef48958& */ \"./src/app.vue?vue&type=template&id=5ef48958&\");\n/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ \"./node_modules/vue-loader/lib/runtime/componentNormalizer.js\");\n\nvar script = {}\n\n\n/* normalize component */\n\nvar component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_1__[\"default\"])(\n  script,\n  _app_vue_vue_type_template_id_5ef48958___WEBPACK_IMPORTED_MODULE_0__[\"render\"],\n  _app_vue_vue_type_template_id_5ef48958___WEBPACK_IMPORTED_MODULE_0__[\"staticRenderFns\"],\n  false,\n  null,\n  null,\n  null\n  \n)\n\n/* hot reload */\nif (true) {\n  var api = __webpack_require__(/*! ./node_modules/vue-hot-reload-api/dist/index.js */ \"./node_modules/vue-hot-reload-api/dist/index.js\")\n  api.install(__webpack_require__(/*! vue */ \"./node_modules/vue/dist/vue.runtime.esm.js\"))\n  if (api.compatible) {\n    module.hot.accept()\n    if (!api.isRecorded('5ef48958')) {\n      api.createRecord('5ef48958', component.options)\n    } else {\n      api.reload('5ef48958', component.options)\n    }\n    module.hot.accept(/*! ./app.vue?vue&type=template&id=5ef48958& */ \"./src/app.vue?vue&type=template&id=5ef48958&\", function(__WEBPACK_OUTDATED_DEPENDENCIES__) { /* harmony import */ _app_vue_vue_type_template_id_5ef48958___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./app.vue?vue&type=template&id=5ef48958& */ \"./src/app.vue?vue&type=template&id=5ef48958&\");\n(function () {\n      api.rerender('5ef48958', {\n        render: _app_vue_vue_type_template_id_5ef48958___WEBPACK_IMPORTED_MODULE_0__[\"render\"],\n        staticRenderFns: _app_vue_vue_type_template_id_5ef48958___WEBPACK_IMPORTED_MODULE_0__[\"staticRenderFns\"]\n      })\n    })(__WEBPACK_OUTDATED_DEPENDENCIES__); }.bind(this))\n  }\n}\ncomponent.options.__file = \"src/app.vue\"\n/* harmony default export */ __webpack_exports__[\"default\"] = (component.exports);\n\n//# sourceURL=webpack:///./src/app.vue?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _app_vue_vue_type_template_id_5ef48958___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./app.vue?vue&type=template&id=5ef48958& */ \"./src/app.vue?vue&type=template&id=5ef48958&\");\n/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ \"./node_modules/vue-loader/lib/runtime/componentNormalizer.js\");\n\nvar script = {}\n\n\n/* normalize component */\n\nvar component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_1__[\"default\"])(\n  script,\n  _app_vue_vue_type_template_id_5ef48958___WEBPACK_IMPORTED_MODULE_0__[\"render\"],\n  _app_vue_vue_type_template_id_5ef48958___WEBPACK_IMPORTED_MODULE_0__[\"staticRenderFns\"],\n  false,\n  null,\n  null,\n  null\n  \n)\n\n/* hot reload */\nif (false) { var api; }\ncomponent.options.__file = \"src/app.vue\"\n/* harmony default export */ __webpack_exports__[\"default\"] = (component.exports);\n\n//# sourceURL=webpack:///./src/app.vue?");
 
 /***/ }),
 
@@ -919,7 +636,31 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _nod
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ \"./node_modules/vue/dist/vue.runtime.esm.js\");\n/* harmony import */ var _app__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./app */ \"./src/app.vue\");\n\n // 创建vue app 实例\n\nconst app = new vue__WEBPACK_IMPORTED_MODULE_0__[\"default\"]({\n  render: h => h(_app__WEBPACK_IMPORTED_MODULE_1__[\"default\"])\n}); // 挂在root dom\n\napp.$mount('#app');\n\nif (true) {\n  console.log(module.hot);\n}\n\n//# sourceURL=webpack:///./src/index.js?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ \"./node_modules/vue/dist/vue.runtime.esm.js\");\n/* harmony import */ var _app__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./app */ \"./src/app.vue\");\n/* harmony import */ var _routes__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./routes */ \"./src/routes.js\");\n/* harmony import */ var _plugins_post__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./plugins/post */ \"./src/plugins/post.js\");\n\n\n\n // 创建vue app 实例\n\nconst app = new vue__WEBPACK_IMPORTED_MODULE_0__[\"default\"]({\n  router: _routes__WEBPACK_IMPORTED_MODULE_2__[\"default\"],\n  render: h => h(_app__WEBPACK_IMPORTED_MODULE_1__[\"default\"])\n}); // 挂在root dom\n\napp.$mount('#app');\n\n//# sourceURL=webpack:///./src/index.js?");
+
+/***/ }),
+
+/***/ "./src/plugins/post.js":
+/*!*****************************!*\
+  !*** ./src/plugins/post.js ***!
+  \*****************************/
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ \"./node_modules/vue/dist/vue.runtime.esm.js\");\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! axios */ \"./node_modules/axios/index.js\");\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_1__);\n\n\nconst post = {};\n\npost.install = function (Vue, options) {\n  Vue.prototype.$post = function () {\n    return axios__WEBPACK_IMPORTED_MODULE_1___default.a.post(...arguments);\n  };\n};\n\nvue__WEBPACK_IMPORTED_MODULE_0__[\"default\"].use(post);\n\n//# sourceURL=webpack:///./src/plugins/post.js?");
+
+/***/ }),
+
+/***/ "./src/routes.js":
+/*!***********************!*\
+  !*** ./src/routes.js ***!
+  \***********************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ \"./node_modules/vue/dist/vue.runtime.esm.js\");\n/* harmony import */ var vue_router__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! vue-router */ \"./node_modules/vue-router/dist/vue-router.esm.js\");\n\n\nvue__WEBPACK_IMPORTED_MODULE_0__[\"default\"].use(vue_router__WEBPACK_IMPORTED_MODULE_1__[\"default\"]);\nconst routes = [{\n  path: '/',\n  component: () => __webpack_require__.e(/*! import() */ 2).then(__webpack_require__.bind(null, /*! ./pages/blog */ \"./src/pages/blog/index.vue\"))\n}, {\n  path: '/auth/login',\n  component: () => __webpack_require__.e(/*! import() */ 0).then(__webpack_require__.bind(null, /*! ./pages/auth/login */ \"./src/pages/auth/login.vue\"))\n}, {\n  path: '/auth/register',\n  component: () => __webpack_require__.e(/*! import() */ 1).then(__webpack_require__.bind(null, /*! ./pages/auth/register */ \"./src/pages/auth/register.vue\"))\n}];\nconst router = new vue_router__WEBPACK_IMPORTED_MODULE_1__[\"default\"]({\n  mode: 'history',\n  routes\n});\n/* harmony default export */ __webpack_exports__[\"default\"] = (router);\n\n//# sourceURL=webpack:///./src/routes.js?");
 
 /***/ })
 
