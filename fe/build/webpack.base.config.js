@@ -3,6 +3,11 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 module.exports = {
     entry: path.resolve(__dirname, '..', 'src', 'index.js'),
+    output: {
+        filename: '[name].js',
+        publicPath: '/static/',
+        path: path.resolve(__dirname, '..', '..', 'flaskr', 'static')
+    },
     resolve: {
         extensions: ['.js', '.vue', '.css']
     },
