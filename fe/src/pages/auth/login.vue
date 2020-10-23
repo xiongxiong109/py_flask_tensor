@@ -30,7 +30,8 @@ export default {
             if (rst.data.error) {
                 this.error = rst.data.error
             } else {
-                this.$router.push('/')
+                // this.$router.push('/')
+                window.location.href = '/'
             }
         } catch (err) {
             console.log(err);
